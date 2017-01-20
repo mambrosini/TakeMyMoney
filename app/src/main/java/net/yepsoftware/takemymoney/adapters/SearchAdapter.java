@@ -38,7 +38,11 @@ public class SearchAdapter  extends ArrayAdapter<Article> {
         Article article = getItem(position);
         title.setText(article.title);
         description.setText(article.description);
-        price.setText("$" + String.valueOf(article.price));
+        if (article.price != 0){
+            price.setText("$" + String.valueOf(article.price));
+        } else {
+            price.setText("");
+        }
 
         return convertView;
 
