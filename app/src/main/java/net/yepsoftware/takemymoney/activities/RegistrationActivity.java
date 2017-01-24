@@ -1,10 +1,17 @@
 package net.yepsoftware.takemymoney.activities;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CheckableImageButton;
+import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -12,18 +19,42 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import net.yepsoftware.takemymoney.R;
+import net.yepsoftware.takemymoney.helpers.PreferencesHelper;
+import net.yepsoftware.takemymoney.helpers.UIUtils;
+import net.yepsoftware.takemymoney.model.Article;
+import net.yepsoftware.takemymoney.model.User;
 
 public class RegistrationActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
 
+    private TextInputEditText email;
+    private TextInputEditText secondaryEmail;
+    private TextInputEditText phone;
+    private TextInputEditText password;
+    private CheckBox checkBox;
+
+    private ProgressDialog progressDialog;
+
+    private DatabaseReference usersDBRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration);
+
+        usersDBRef = FirebaseDatabase.getInstance().getReference().child("users");
+
+        email = (TextInputEditText) findViewById(R.id.email);
+        secondaryEmail = (TextInputEditText) findViewById(R.id.secondaryMail);
+        phone = (TextInputEditText) findViewById(R.id.phone);
+        password = (TextInputEditText) findViewById(R.id.password);
+        checkBox = (CheckBox) findViewById(R.id.checkbox);
 
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -31,8 +62,22 @@ public class RegistrationActivity extends AppCompatActivity {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
+                    if (progressDialog!= null){
+                        progressDialog.dismiss();
+                    }
                     // User is signed in
                     Log.d("", "onAuthStateChanged:signed_in:" + user.getUid());
+                    PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_AUTHENTICATED);
+
+                    String key = user.getUid();
+                    User dbUser = new User(key, email.getText().toString(), secondaryEmail.getText().toString(), phone.getText().toString());
+                    usersDBRef.child(key).setValue(dbUser);
+
+                    PreferencesHelper.saveUserId(getApplicationContext(), key);
+
+                    finish();
+                    Intent intent = new Intent(RegistrationActivity.this, NewArticleActivity.class);
+                    startActivity(intent);
                 } else {
                     // User is signed out
                     Log.d("", "onAuthStateChanged:signed_out");
@@ -56,22 +101,37 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     public void registerWithMailAndPassword(View v){
-        mAuth.createUserWithEmailAndPassword("", "")
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d("AuthenticationActivity", "createUserWithEmail:onComplete:" + task.isSuccessful());
+        if (!email.getText().toString().equals("") &&
+                !password.getText().toString().equals("")) {
+            progressDialog = UIUtils.showProgressDialog(RegistrationActivity.this, "Registering user...");
 
-                        // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
-                        // signed in user can be handled in the listener.
-                        if (!task.isSuccessful()) {
-                            Toast.makeText(AuthenticationActivity.this, "Auth failed",
-                                    Toast.LENGTH_SHORT).show();
+            if (checkBox.isChecked()){
+                PreferencesHelper.saveUsername(getApplicationContext(), email.getText().toString());
+                PreferencesHelper.savePassword(getApplicationContext(), password.getText().toString());
+                PreferencesHelper.setAutoLogin(getApplicationContext(), true);
+            } else {
+                PreferencesHelper.setAutoLogin(getApplicationContext(), false);
+            }
+
+            mAuth.createUserWithEmailAndPassword(email.getText().toString(), password.getText().toString())
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            Log.d("AuthenticationActivity", "createUserWithEmail:onComplete:" + task.isSuccessful());
+
+                            // If sign in fails, display a message to the user. If sign in succeeds
+                            // the auth state listener will be notified and logic to handle the
+                            // signed in user can be handled in the listener.
+                            if (!task.isSuccessful()) {
+                                Toast.makeText(RegistrationActivity.this, "Auth failed",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+
+                            // ...
                         }
-
-                        // ...
-                    }
-                });
+                    });
+        } else {
+            Toast.makeText(getApplicationContext(),"You must fill all the fields.", Toast.LENGTH_SHORT).show();
+        }
     }
 }

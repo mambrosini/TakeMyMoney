@@ -11,6 +11,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import net.yepsoftware.takemymoney.R;
+import net.yepsoftware.takemymoney.helpers.PreferencesHelper;
 import net.yepsoftware.takemymoney.model.Article;
 
 public class NewArticleActivity extends AppCompatActivity {
@@ -50,7 +51,7 @@ public class NewArticleActivity extends AppCompatActivity {
     }
 
     private void writeNewArticle(String title, String description, double price) {
-        Article article = new Article(title, description, price);
+        Article article = new Article(PreferencesHelper.getUserId(getApplicationContext()), title, description, price);
         String key = articlesDBRef.push().getKey();
         articlesDBRef.child(key).setValue(article);
     }

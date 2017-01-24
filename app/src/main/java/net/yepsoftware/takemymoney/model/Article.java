@@ -11,13 +11,15 @@ import java.util.Map;
  */
 @IgnoreExtraProperties
 public class Article {
+    public String uid;
     public String title;
     public String description;
     public double price;
 
     public Article(){}
 
-    public Article(String title, String description, double price) {
+    public Article(String uid, String title, String description, double price) {
+        this.uid = uid;
         this.title = title;
         this.description = description;
         this.price = price;
@@ -26,6 +28,7 @@ public class Article {
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
+        result.put("uid", uid);
         result.put("title", title);
         result.put("description", description);
         result.put("price", price);

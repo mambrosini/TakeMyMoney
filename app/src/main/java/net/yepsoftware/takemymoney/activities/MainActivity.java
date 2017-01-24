@@ -1,29 +1,22 @@
 package net.yepsoftware.takemymoney.activities;
 
 import android.animation.LayoutTransition;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.transition.TransitionManager;
 import android.util.Log;
-import android.view.Display;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.ScaleAnimation;
-import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -42,9 +35,11 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import net.yepsoftware.takemymoney.R;
 import net.yepsoftware.takemymoney.adapters.SearchAdapter;
-import net.yepsoftware.takemymoney.helpers.UIUtils;
+import net.yepsoftware.takemymoney.helpers.PreferencesHelper;
 import net.yepsoftware.takemymoney.model.Article;
 import net.yepsoftware.takemymoney.model.SearchQuery;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -120,10 +115,10 @@ public class MainActivity extends AppCompatActivity {
                                     if (hitsArrayList != null && hitsArrayList.size() > 0) {
                                         for (Map<String, Object> hitMap : hitsArrayList) {
                                             Map<String, Object> detailsMap = (Map<String, Object>) hitMap.get("_source");
-                                            searchedArticles.add(new Article(detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price")))));
+                                            searchedArticles.add(new Article(detailsMap.get("uid").toString(), detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price")))));
                                         }
                                     } else {
-                                        searchedArticles.add(new Article("Didn't find a match for your search...", "", 0.0));
+                                        searchedArticles.add(new Article("", "Didn't find a match for your search...", "", 0.0));
                                     }
                                     progressBar.setVisibility(View.GONE);
                                     searchAdapter.notifyDataSetChanged();
@@ -181,14 +176,26 @@ public class MainActivity extends AppCompatActivity {
 //        translate.setDuration(1000);
 //        translate.setFillAfter(true);
 
-
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        assert fab != null;
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, NewArticleActivity.class);
-                startActivity(intent);
+                Intent intent;
+                switch (PreferencesHelper.getAppState(getApplicationContext())){
+                    case PreferencesHelper.APP_STATE_AUTHENTICATED:
+                        intent = new Intent(MainActivity.this, NewArticleActivity.class);
+                        startActivity(intent);
+                        break;
+                    case PreferencesHelper.APP_STATE_UNAUTHENTICATED:
+                        intent = new Intent(MainActivity.this, AuthenticationActivity.class);
+                        startActivity(intent);
+                        break;
+                    case PreferencesHelper.APP_STATE_UNREGISTERED:
+                        intent = new Intent(MainActivity.this, RegistrationActivity.class);
+                        startActivity(intent);
+                        break;
+                }
             }
         });
     }
@@ -209,6 +216,10 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            return true;
+        } else if (id == R.id.unlink_device){
+            FirebaseAuth.getInstance().signOut();
+            PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_UNREGISTERED);
             return true;
         }
 
@@ -235,5 +246,11 @@ public class MainActivity extends AppCompatActivity {
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_UNREGISTERED);
     }
 }
