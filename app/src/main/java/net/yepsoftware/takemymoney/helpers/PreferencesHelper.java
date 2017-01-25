@@ -77,4 +77,20 @@ public class PreferencesHelper {
         SharedPreferences preferences = context.getSharedPreferences(SARED_PREFS_NAME, Context.MODE_PRIVATE);
         return preferences.getString(UID_PREF, "");
     }
+
+    public static void resetSettingsAndUnlinkDevice(Context context){
+        setAppState(context, APP_STATE_UNREGISTERED);
+        saveUsername(context, "");
+        savePassword(context, "");
+        saveUserId(context, "");
+        setAutoLogin(context, false);
+    }
+
+    public static void setTestAccount(Context context){
+        setAppState(context, APP_STATE_AUTHENTICATED);
+        saveUsername(context, "test@takemymoney.com");
+        savePassword(context, "Maxman16");
+        saveUserId(context, "yJUHfWPhMBZaTILVAOjmtCO52wA2");
+        setAutoLogin(context, true);
+    }
 }

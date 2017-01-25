@@ -1,10 +1,13 @@
-package net.yepsoftware.takemymoney.activities;
+package net.yepsoftware.takemymoney.activities.menu.fragments;
 
 import android.app.ProgressDialog;
-import android.support.v7.app.AppCompatActivity;
+import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.google.firebase.database.ChildEventListener;
@@ -23,7 +26,15 @@ import net.yepsoftware.takemymoney.model.SearchQuery;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class MyArticles extends ChildActivity {
+/**
+ * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * {@link MyArticlesFragment.OnFragmentInteractionListener} interface
+ * to handle interaction events.
+ * Use the {@link MyArticlesFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class MyArticlesFragment extends Fragment {
 
     private ListView listView;
     private ArticleListAdapter articleListAdapter;
@@ -32,23 +43,35 @@ public class MyArticles extends ChildActivity {
     private DatabaseReference responseDBRef;
     private ProgressDialog progressDialog;
 
+    private OnFragmentInteractionListener mListener;
+
+    public MyArticlesFragment() {
+        // Required empty public constructor
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_my_articles);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_my_articles, container, false);
 
         articles = new ArrayList<>();
-        listView = (ListView) findViewById(R.id.listView);
-        articleListAdapter = new ArticleListAdapter(getApplicationContext(), articles);
+        listView = (ListView) view.findViewById(R.id.listView);
+        articleListAdapter = new ArticleListAdapter(getActivity(), articles);
         listView.setAdapter(articleListAdapter);
 
-        progressDialog = UIUtils.showProgressDialog(MyArticles.this, "Retrieving posts...");
+        progressDialog = UIUtils.showProgressDialog(getActivity(), "Retrieving posts...");
 
         requestDBRef = FirebaseDatabase.getInstance().getReference("search/request");
         responseDBRef = FirebaseDatabase.getInstance().getReference("search/response");
 
         String key = requestDBRef.push().getKey();
-        requestDBRef.child(key).setValue(new SearchQuery().searchByUser(PreferencesHelper.getUserId(getApplicationContext())));
+        requestDBRef.child(key).setValue(new SearchQuery().searchByUser(PreferencesHelper.getUserId(getActivity())));
         responseDBRef = FirebaseDatabase.getInstance().getReference("search/response").child(key);
         responseDBRef.addChildEventListener(new ChildEventListener() {
             @Override
@@ -78,5 +101,45 @@ public class MyArticles extends ChildActivity {
             public void onCancelled(DatabaseError databaseError) {}
         });
 
+        return view;
+    }
+
+    // TODO: Rename method, update argument and hook method into UI event
+    public void onButtonPressed(Uri uri) {
+        if (mListener != null) {
+            mListener.onMyArticlesInteraction(uri);
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p/>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        // TODO: Update argument type and name
+        void onMyArticlesInteraction(Uri uri);
     }
 }
