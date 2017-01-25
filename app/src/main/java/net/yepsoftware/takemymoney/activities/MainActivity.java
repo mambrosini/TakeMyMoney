@@ -4,7 +4,10 @@ import android.animation.LayoutTransition;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -19,6 +22,7 @@ import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -34,7 +38,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import net.yepsoftware.takemymoney.R;
-import net.yepsoftware.takemymoney.adapters.SearchAdapter;
+import net.yepsoftware.takemymoney.adapters.ArticleListAdapter;
 import net.yepsoftware.takemymoney.helpers.PreferencesHelper;
 import net.yepsoftware.takemymoney.model.Article;
 import net.yepsoftware.takemymoney.model.SearchQuery;
@@ -45,7 +49,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     private DatabaseReference requestDBRef;
     private DatabaseReference responseDBRef;
@@ -56,11 +60,13 @@ public class MainActivity extends AppCompatActivity {
     private ViewGroup.LayoutParams searchParams;
     private ListView searchListView;
     private ArrayList<Article> searchedArticles;
-    private SearchAdapter searchAdapter;
+    private ArticleListAdapter articleListAdapter;
     private ProgressBar progressBar;
 
     private Animation fadeOut;
     private Animation fadeIn;
+
+    DrawerLayout drawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +74,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.inflateMenu(R.menu.drawer_menu);
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
@@ -90,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         searchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH || event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
                     if (!searchEditText.getText().toString().isEmpty() && searchEditText.getText().toString().split("\\s+").length != 0) {
                         progressBar.setVisibility(View.VISIBLE);
                         if (imageView.getVisibility() == View.VISIBLE){
@@ -101,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                         imm.hideSoftInputFromWindow(searchEditText.getWindowToken(), 0);
 
                         searchedArticles.clear();
-                        searchAdapter.notifyDataSetChanged();
+                        articleListAdapter.notifyDataSetChanged();
 
                         String key = requestDBRef.push().getKey();
                         requestDBRef.child(key).setValue(new SearchQuery(searchEditText.getText().toString()));
@@ -121,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                                         searchedArticles.add(new Article("", "Didn't find a match for your search...", "", 0.0));
                                     }
                                     progressBar.setVisibility(View.GONE);
-                                    searchAdapter.notifyDataSetChanged();
+                                    articleListAdapter.notifyDataSetChanged();
                                 }
                             }
 
@@ -153,8 +164,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         searchedArticles = new ArrayList<>();
-        searchAdapter = new SearchAdapter(getApplicationContext(), searchedArticles);
-        searchListView.setAdapter(searchAdapter);
+        articleListAdapter = new ArticleListAdapter(getApplicationContext(), searchedArticles);
+        searchListView.setAdapter(articleListAdapter);
 
         fadeOut = new AlphaAnimation(1, 0);
         fadeOut.setInterpolator(new DecelerateInterpolator());
@@ -165,16 +176,6 @@ public class MainActivity extends AppCompatActivity {
         fadeIn.setInterpolator(new DecelerateInterpolator());
         fadeIn.setDuration(300);
         fadeIn.setFillAfter(true);
-
-//        Display display = getWindowManager().getDefaultDisplay();
-//        Point size = new Point();
-//        display.getSize(size);
-//        int height = size.y;
-//
-//        translate = new TranslateAnimation(0, 0, 0, - height/2 + searchEditText.getHeight()/2);
-//        translate.setInterpolator(new DecelerateInterpolator());
-//        translate.setDuration(1000);
-//        translate.setFillAfter(true);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         assert fab != null;
@@ -196,6 +197,19 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(intent);
                         break;
                 }
+            }
+        });
+
+        searchListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, ArticleDetailActivity.class);
+                Article article = searchedArticles.get(position);
+                intent.putExtra("uid", article.uid);
+                intent.putExtra("title", article.title);
+                intent.putExtra("description", article.description);
+                intent.putExtra("price", article.price);
+                startActivity(intent);
             }
         });
     }
@@ -220,6 +234,10 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.unlink_device){
             FirebaseAuth.getInstance().signOut();
             PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_UNREGISTERED);
+            return true;
+        } else if (id == R.id.my_articles){
+            Intent intent = new Intent(MainActivity.this, MyArticles.class);
+            startActivity(intent);
             return true;
         }
 
@@ -252,5 +270,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_UNREGISTERED);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        return false;
     }
 }

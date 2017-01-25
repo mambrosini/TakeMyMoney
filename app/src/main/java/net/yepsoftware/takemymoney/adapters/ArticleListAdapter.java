@@ -15,11 +15,11 @@ import java.util.ArrayList;
 /**
  * Created by Maxi on 18/1/2017.
  */
-public class SearchAdapter  extends ArrayAdapter<Article> {
+public class ArticleListAdapter extends ArrayAdapter<Article> {
 
     ArrayList<Article> articles;
 
-    public SearchAdapter(Context context, ArrayList<Article> articles) {
+    public ArticleListAdapter(Context context, ArrayList<Article> articles) {
         super(context, 0 , articles);
         this.articles = articles;
     }

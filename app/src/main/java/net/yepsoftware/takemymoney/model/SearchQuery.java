@@ -23,6 +23,13 @@ public class SearchQuery {
         this.q = query;
     }
 
+    public SearchQuery searchByUser(String uid){
+        String query;
+        query = "(uid:" + uid + ")";
+        this.q = query;
+        return this;
+    }
+
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();

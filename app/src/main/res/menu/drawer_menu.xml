@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_dr"
+        android:title="menu_dr"/>
+    <item
+        android:id="@+id/menu_wllt"
+        android:title="menu_wllt"/>
+    <item
+        android:id="@+id/menu_history"
+        android:title="menu_history"/>
+    <item
+        android:id="@+id/menu_offers"
+        android:title="menu_offers"/>
+    <item
+        android:id="@+id/menu_location"
+        android:title="menu_location"/>
+    <item
+        android:id="@+id/menu_settings"
+        android:title="menu_settings"/>
+    <item
+        android:id="@+id/menu_help"
+        android:title="menu_help"/>
+</menu>

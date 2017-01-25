@@ -15,7 +15,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import net.yepsoftware.takemymoney.R;
 
-public class AuthenticationActivity extends AppCompatActivity {
+public class AuthenticationActivity extends ChildActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;

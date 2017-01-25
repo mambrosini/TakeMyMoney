@@ -28,7 +28,7 @@ import net.yepsoftware.takemymoney.helpers.UIUtils;
 import net.yepsoftware.takemymoney.model.Article;
 import net.yepsoftware.takemymoney.model.User;
 
-public class RegistrationActivity extends AppCompatActivity {
+public class RegistrationActivity extends ChildActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;

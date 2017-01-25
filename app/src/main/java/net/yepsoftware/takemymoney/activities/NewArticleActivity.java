@@ -14,7 +14,7 @@ import net.yepsoftware.takemymoney.R;
 import net.yepsoftware.takemymoney.helpers.PreferencesHelper;
 import net.yepsoftware.takemymoney.model.Article;
 
-public class NewArticleActivity extends AppCompatActivity {
+public class NewArticleActivity extends ChildActivity {
 
     private EditText titleEditText;
     private EditText descriptionEditText;

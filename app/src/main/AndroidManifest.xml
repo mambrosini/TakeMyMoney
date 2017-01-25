@@ -12,25 +12,31 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".activities.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:label="Authentication"
             android:name=".activities.AuthenticationActivity"
-            android:parentActivityName=".activities.MainActivity"/>
+            android:label="Authentication"
+            android:parentActivityName=".activities.MainActivity" />
         <activity
-            android:label="Sell"
             android:name=".activities.NewArticleActivity"
-            android:parentActivityName=".activities.MainActivity"/>
+            android:label="Sell"
+            android:parentActivityName=".activities.MainActivity" />
         <activity
-            android:label="Registration"
             android:name=".activities.RegistrationActivity"
-            android:parentActivityName=".activities.MainActivity"></activity>
+            android:label="Registration"
+            android:parentActivityName=".activities.MainActivity" />
+        <activity
+            android:name=".activities.ArticleDetailActivity"
+            android:parentActivityName=".activities.MainActivity" />
+        <activity android:name=".activities.MyArticles"
+            android:parentActivityName=".activities.MainActivity" />
     </application>
 
 </manifest>
