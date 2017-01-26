@@ -1,20 +1,15 @@
 package net.yepsoftware.takemymoney.activities;
 
-import android.animation.LayoutTransition;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -24,20 +19,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.DecelerateInterpolator;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,34 +28,32 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import net.yepsoftware.takemymoney.R;
 import net.yepsoftware.takemymoney.activities.menu.fragments.MyArticlesFragment;
 import net.yepsoftware.takemymoney.activities.menu.fragments.SearchFragment;
-import net.yepsoftware.takemymoney.adapters.ArticleListAdapter;
+import net.yepsoftware.takemymoney.activities.menu.fragments.SettingsFragment;
 import net.yepsoftware.takemymoney.helpers.PreferencesHelper;
 import net.yepsoftware.takemymoney.helpers.UIUtils;
-import net.yepsoftware.takemymoney.model.Article;
-import net.yepsoftware.takemymoney.model.SearchQuery;
-
-import java.util.ArrayList;
-import java.util.Map;
 
 public class MainDrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         SearchFragment.OnFragmentInteractionListener,
-        MyArticlesFragment.OnFragmentInteractionListener{
+        MyArticlesFragment.OnFragmentInteractionListener,
+        SettingsFragment.OnFragmentInteractionListener{
 
+    private NavigationView navigationView;
+    private Menu appMenu;
     private LinearLayout headerLayout;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private ProgressDialog progressDialog;
+
+    public static final int PAGE_SEARCH = 0;
+    public static final int PAGE_MY_ARTICLES = 1;
+    public static final int PAGE_SETTINGS = 2;
+
+    private int currentPage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,34 +68,18 @@ public class MainDrawerActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         headerLayout = (LinearLayout) navigationView.getHeaderView(0);
 
-        customizeDrawerHeader();
-
-        displayView(R.id.nav_camera);
+        navigate(PAGE_SEARCH);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         assert fab != null;
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent;
-                switch (PreferencesHelper.getAppState(MainDrawerActivity.this)){
-                    case PreferencesHelper.APP_STATE_AUTHENTICATED:
-                        intent = new Intent(MainDrawerActivity.this, NewArticleActivity.class);
-                        startActivity(intent);
-                        break;
-                    case PreferencesHelper.APP_STATE_UNAUTHENTICATED:
-                        intent = new Intent(MainDrawerActivity.this, AuthenticationActivity.class);
-                        startActivity(intent);
-                        break;
-                    case PreferencesHelper.APP_STATE_UNREGISTERED:
-                        intent = new Intent(MainDrawerActivity.this, RegistrationActivity.class);
-                        startActivity(intent);
-                        break;
-                }
+                navigateToSellPage();
             }
         });
 
@@ -122,15 +87,81 @@ public class MainDrawerActivity extends AppCompatActivity
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-
-                    Log.d("FirebaseAuth", "User signed in.");
-                } else {
-                    Log.d("FirebaseAuth", "User signed out.");
-                }
+//                FirebaseUser user = firebaseAuth.getCurrentUser();
+//                if (user != null) {
+//                    Log.d("FirebaseAuth", "User signed in.");
+//                    PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_AUTHENTICATED);
+//                } else {
+//                    Log.d("FirebaseAuth", "User signed out.");
+//                    if ( PreferencesHelper.getAppState(getApplicationContext()).equals(PreferencesHelper.APP_STATE_AUTHENTICATED)){
+//                        PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_UNAUTHENTICATED);
+//                    }
+//                }
+//                customizeDrawerHeader();
             }
         };
+
+        if (PreferencesHelper.getAppState(getApplicationContext()).equals(PreferencesHelper.APP_STATE_AUTHENTICATED)) {
+            PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_UNAUTHENTICATED);
+        }
+
+        if (PreferencesHelper.isAutoLogin(getApplicationContext())) {
+            progressDialog = UIUtils.showProgressDialog(MainDrawerActivity.this, "Signin in...");
+            firebaseSignIn(PreferencesHelper.getMail(getApplicationContext()),
+                    PreferencesHelper.getPassword(getApplicationContext()),
+                    new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            progressDialog.dismiss();
+                            if (!task.isSuccessful()) {
+                                Log.w("FirebaseAuth", "signInWithEmail:failed", task.getException());
+                                Toast.makeText(MainDrawerActivity.this, "Auth Failed",
+                                        Toast.LENGTH_SHORT).show();
+                            } else {
+                                PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_AUTHENTICATED);
+                                refreshUI();
+                            }
+                        }
+                    });
+        }
+    }
+
+    private void navigateToSellPage() {
+        Intent intent;
+        switch (PreferencesHelper.getAppState(MainDrawerActivity.this)){
+            case PreferencesHelper.APP_STATE_AUTHENTICATED:
+                intent = new Intent(MainDrawerActivity.this, NewArticleActivity.class);
+                startActivity(intent);
+                break;
+            case PreferencesHelper.APP_STATE_UNAUTHENTICATED:
+                if (PreferencesHelper.isAutoLogin(getApplicationContext())){
+                    progressDialog = UIUtils.showProgressDialog(MainDrawerActivity.this,"Signin in...");
+                    firebaseSignIn(PreferencesHelper.getMail(getApplicationContext()),
+                            PreferencesHelper.getPassword(getApplicationContext()),
+                            new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    progressDialog.dismiss();
+                                    if (!task.isSuccessful()) {
+                                        Log.w("FirebaseAuth", "signInWithEmail:failed", task.getException());
+                                        Toast.makeText(MainDrawerActivity.this, "Auth Failed",
+                                                Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_AUTHENTICATED);
+                                        refreshUI();
+                                        Intent intent = new Intent(MainDrawerActivity.this, NewArticleActivity.class);
+                                        startActivity(intent);
+                                    }
+                                }
+                            });
+                } else {
+                    UIUtils.showAuthDialog(MainDrawerActivity.this, false);
+                }
+                break;
+            case PreferencesHelper.APP_STATE_UNREGISTERED:
+                UIUtils.showAuthDialog(MainDrawerActivity.this, true);
+                break;
+        }
     }
 
     @Override
@@ -151,12 +182,23 @@ public class MainDrawerActivity extends AppCompatActivity
         String account;
         int imageResID;
 
-        if (PreferencesHelper.getUsername(getApplicationContext()).equals("")){
-            account = "Anonymous";
-            imageResID = R.drawable.ic_account_circle_white;
-        } else {
-            account = PreferencesHelper.getUsername(getApplicationContext());
-            imageResID = R.mipmap.ic_launcher;
+        switch (PreferencesHelper.getAppState(getApplicationContext())){
+            case PreferencesHelper.APP_STATE_UNAUTHENTICATED:
+                account = PreferencesHelper.getMail(getApplicationContext());
+                imageResID = R.drawable.ic_account_circle_white;
+                break;
+            case PreferencesHelper.APP_STATE_UNREGISTERED:
+                account = "Anonymous";
+                imageResID = R.drawable.ic_account_circle_white;
+                break;
+            case PreferencesHelper.APP_STATE_AUTHENTICATED:
+                account = PreferencesHelper.getMail(getApplicationContext());
+                imageResID = R.mipmap.ic_launcher;
+                break;
+            default:
+                account = "Anonymous";
+                imageResID = R.drawable.ic_account_circle_white;
+                break;
         }
 
         for (int i = 0; i < headerLayout.getChildCount(); i++) {
@@ -177,6 +219,8 @@ public class MainDrawerActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if (currentPage != PAGE_SEARCH){
+            navigate(PAGE_SEARCH);
         } else {
             super.onBackPressed();
         }
@@ -186,6 +230,8 @@ public class MainDrawerActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        appMenu = menu;
+        customizeMenu();
         return true;
     }
 
@@ -197,17 +243,17 @@ public class MainDrawerActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_sign_in) {
             return true;
         } else if (id == R.id.unlink_device){
             FirebaseAuth.getInstance().signOut();
             PreferencesHelper.resetSettingsAndUnlinkDevice(MainDrawerActivity.this);
-            customizeDrawerHeader();
+            refreshUI();
             return true;
         } else if (id == R.id.link_device){
             progressDialog = UIUtils.showProgressDialog(MainDrawerActivity.this, "Signin in...");
-            mAuth.signInWithEmailAndPassword("test@takemymoney.com", "Maxman16")
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            firebaseSignIn("test@takemymoney.com", "Maxman16",
+                    new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             progressDialog.dismiss();
@@ -217,7 +263,7 @@ public class MainDrawerActivity extends AppCompatActivity
                                         Toast.LENGTH_SHORT).show();
                             } else {
                                 PreferencesHelper.setTestAccount(MainDrawerActivity.this);
-                                customizeDrawerHeader();
+                                refreshUI();
                             }
                         }
                     });
@@ -226,6 +272,11 @@ public class MainDrawerActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void firebaseSignIn(String user, String password , OnCompleteListener onCompleteListener) {
+        mAuth.signInWithEmailAndPassword(user, password)
+                .addOnCompleteListener(this, onCompleteListener);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -241,27 +292,39 @@ public class MainDrawerActivity extends AppCompatActivity
         return true;
     }
 
+    public void navigate(int destination){
+        switch (destination){
+            case PAGE_SEARCH:
+                displayView(R.id.nav_search);
+                break;
+            case PAGE_MY_ARTICLES:
+                displayView(R.id.nav_my_articles);
+                break;
+            case PAGE_SETTINGS:
+                displayView(R.id.nav_settings);
+                break;
+        }
+    }
+
     public void displayView(int viewId) {
 
         Fragment fragment = null;
         String title = getString(R.string.app_name);
-
-        if (viewId == R.id.nav_camera) {
+        navigationView.setCheckedItem(viewId);
+        if (viewId == R.id.nav_search) {
+            currentPage = PAGE_SEARCH;
             fragment = new SearchFragment();
             title  = "Search";
-        } else if (viewId == R.id.nav_gallery) {
+        } else if (viewId == R.id.nav_my_articles) {
+            currentPage = PAGE_MY_ARTICLES;
             fragment = new MyArticlesFragment();
             title  = "My Articles";
-        } else if (viewId == R.id.nav_slideshow) {
-            fragment = new SearchFragment();
-            title  = "Search";
-        } else if (viewId == R.id.nav_manage) {
-            fragment = new SearchFragment();
-            title  = "Search";
+        } else if (viewId == R.id.nav_settings) {
+            currentPage = PAGE_SETTINGS;
+            fragment = new SettingsFragment();
+            title  = "Settings";
         } else if (viewId == R.id.nav_share) {
-            fragment = new SearchFragment();
-            title  = "Search";
-        } else if (viewId == R.id.nav_send) {
+            currentPage = PAGE_SEARCH;
             fragment = new SearchFragment();
             title  = "Search";
         }
@@ -282,6 +345,58 @@ public class MainDrawerActivity extends AppCompatActivity
 
     }
 
+    public void refreshUI(){
+        customizeDrawerHeader();
+        customizeMenu();
+    }
+
+    private void customizeMenu(){
+        if (appMenu != null) {
+            switch (PreferencesHelper.getAppState(getApplicationContext())) {
+                case PreferencesHelper.APP_STATE_UNAUTHENTICATED:
+                    appMenu.getItem(0).setTitle("Sign In");
+                    appMenu.getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            Intent intent = new Intent(MainDrawerActivity.this, AuthenticationActivity.class);
+                            startActivity(intent);
+                            return false;
+                        }
+                    });
+                    break;
+                case PreferencesHelper.APP_STATE_UNREGISTERED:
+                    appMenu.getItem(0).setTitle("Register");
+                    appMenu.getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            Intent intent = new Intent(MainDrawerActivity.this, RegistrationActivity.class);
+                            startActivity(intent);
+                            return false;
+                        }
+                    });
+                    break;
+                case PreferencesHelper.APP_STATE_AUTHENTICATED:
+                    appMenu.getItem(0).setTitle("Sign Out");
+                    appMenu.getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            FirebaseAuth.getInstance().signOut();
+                            PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_UNAUTHENTICATED);
+                            refreshUI();
+                            return false;
+                        }
+                    });
+                    break;
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshUI();
+    }
+
     @Override
     public void onSearchInteraction(Uri uri) {
 
@@ -289,6 +404,11 @@ public class MainDrawerActivity extends AppCompatActivity
 
     @Override
     public void onMyArticlesInteraction(Uri uri) {
+
+    }
+
+    @Override
+    public void onSettingsInteraction(Uri uri) {
 
     }
 }

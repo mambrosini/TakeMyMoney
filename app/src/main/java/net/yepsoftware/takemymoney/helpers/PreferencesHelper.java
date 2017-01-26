@@ -2,6 +2,7 @@ package net.yepsoftware.takemymoney.helpers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 /**
  * Created by Maxi on 23/1/2017.
@@ -17,12 +18,15 @@ public class PreferencesHelper {
     private static final String PASSWORD_PREF = "pref.pswd";
     private static final String AUTOMATIC_LOGIN_PREF = "pref.autologin";
     private static final String UID_PREF = "pref.uid";
+    private static final String PHONE_PREF = "pref.phone";
+    private static final String SECONDARY_MAIL_PREF = "pref.user.secondary";
 
     public static void setAppState(Context context, String appState){
         SharedPreferences preferences = context.getSharedPreferences(SARED_PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(AUTHENTICATED_PREF, appState);
         editor.commit();
+        Log.d("PreferencesHelper", "App state set to: " + appState);
     }
 
     public static String getAppState(Context context){
@@ -30,14 +34,14 @@ public class PreferencesHelper {
         return preferences.getString(AUTHENTICATED_PREF, APP_STATE_UNREGISTERED);
     }
 
-    public static void saveUsername(Context context, String username){
+    public static void saveMail(Context context, String username){
         SharedPreferences preferences = context.getSharedPreferences(SARED_PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(USERNAME_PREF, username);
         editor.commit();
     }
 
-    public static String getUsername(Context context){
+    public static String getMail(Context context){
         SharedPreferences preferences = context.getSharedPreferences(SARED_PREFS_NAME, Context.MODE_PRIVATE);
         return preferences.getString(USERNAME_PREF, "");
     }
@@ -80,17 +84,48 @@ public class PreferencesHelper {
 
     public static void resetSettingsAndUnlinkDevice(Context context){
         setAppState(context, APP_STATE_UNREGISTERED);
-        saveUsername(context, "");
+        saveMail(context, "");
         savePassword(context, "");
         saveUserId(context, "");
+        saveSecondaryMail(context, "");
+        savePhone(context, "");
         setAutoLogin(context, false);
     }
 
     public static void setTestAccount(Context context){
         setAppState(context, APP_STATE_AUTHENTICATED);
-        saveUsername(context, "test@takemymoney.com");
+        saveMail(context, "test@takemymoney.com");
         savePassword(context, "Maxman16");
         saveUserId(context, "yJUHfWPhMBZaTILVAOjmtCO52wA2");
+        saveSecondaryMail(context, "");
+        savePhone(context, "2613847779");
         setAutoLogin(context, true);
+    }
+
+
+
+
+    public static void saveSecondaryMail(Context context, String username){
+        SharedPreferences preferences = context.getSharedPreferences(SARED_PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(SECONDARY_MAIL_PREF, username);
+        editor.commit();
+    }
+
+    public static String getSecondaryMail(Context context){
+        SharedPreferences preferences = context.getSharedPreferences(SARED_PREFS_NAME, Context.MODE_PRIVATE);
+        return preferences.getString(SECONDARY_MAIL_PREF, "");
+    }
+
+    public static void savePhone(Context context, String username){
+        SharedPreferences preferences = context.getSharedPreferences(SARED_PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(PHONE_PREF, username);
+        editor.commit();
+    }
+
+    public static String getPhone(Context context){
+        SharedPreferences preferences = context.getSharedPreferences(SARED_PREFS_NAME, Context.MODE_PRIVATE);
+        return preferences.getString(PHONE_PREF, "");
     }
 }
