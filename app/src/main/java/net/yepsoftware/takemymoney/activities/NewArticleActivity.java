@@ -1,6 +1,5 @@
 package net.yepsoftware.takemymoney.activities;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -51,7 +50,7 @@ public class NewArticleActivity extends ChildActivity {
     }
 
     private void writeNewArticle(String title, String description, double price) {
-        Article article = new Article(PreferencesHelper.getUserId(getApplicationContext()), title, description, price);
+        Article article = new Article(PreferencesHelper.getUserId(getApplicationContext()), title, description, price, Article.State.ACTIVE);
         String key = articlesDBRef.push().getKey();
         articlesDBRef.child(key).setValue(article);
     }

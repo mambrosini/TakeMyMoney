@@ -1,5 +1,6 @@
 package net.yepsoftware.takemymoney.activities;
 
+import android.provider.Contacts;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,9 +15,10 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import net.yepsoftware.takemymoney.R;
 import net.yepsoftware.takemymoney.helpers.PreferencesHelper;
+import net.yepsoftware.takemymoney.helpers.UIUtils;
 import net.yepsoftware.takemymoney.model.User;
 
-public class ContactInfoActivity extends AppCompatActivity {
+public class ContactInfoActivity extends ChildActivity {
 
     private TextInputEditText email;
     private TextInputEditText secondaryEmail;
@@ -52,10 +54,13 @@ public class ContactInfoActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                UIUtils.hideKeyboard(ContactInfoActivity.this);
                 if (needToSave){
                     String key = PreferencesHelper.getUserId(getApplicationContext());
                     User dbUser = new User(key, email.getText().toString(), secondaryEmail.getText().toString(), phone.getText().toString());
                     usersDBRef.child(key).setValue(dbUser);
+                    PreferencesHelper.savePhone(getApplicationContext(), phone.getText().toString());
+                    PreferencesHelper.saveSecondaryMail(getApplicationContext(), secondaryEmail.getText().toString());
                 }
                 finish();
             }

@@ -33,8 +33,11 @@ import net.yepsoftware.takemymoney.R;
 import net.yepsoftware.takemymoney.activities.menu.fragments.MyArticlesFragment;
 import net.yepsoftware.takemymoney.activities.menu.fragments.SearchFragment;
 import net.yepsoftware.takemymoney.activities.menu.fragments.SettingsFragment;
+import net.yepsoftware.takemymoney.helpers.AuthUtils;
 import net.yepsoftware.takemymoney.helpers.PreferencesHelper;
 import net.yepsoftware.takemymoney.helpers.UIUtils;
+
+import java.util.concurrent.Callable;
 
 public class MainDrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -135,31 +138,20 @@ public class MainDrawerActivity extends AppCompatActivity
                 break;
             case PreferencesHelper.APP_STATE_UNAUTHENTICATED:
                 if (PreferencesHelper.isAutoLogin(getApplicationContext())){
-                    progressDialog = UIUtils.showProgressDialog(MainDrawerActivity.this,"Signin in...");
-                    firebaseSignIn(PreferencesHelper.getMail(getApplicationContext()),
-                            PreferencesHelper.getPassword(getApplicationContext()),
-                            new OnCompleteListener<AuthResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    progressDialog.dismiss();
-                                    if (!task.isSuccessful()) {
-                                        Log.w("FirebaseAuth", "signInWithEmail:failed", task.getException());
-                                        Toast.makeText(MainDrawerActivity.this, "Auth Failed",
-                                                Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_AUTHENTICATED);
-                                        refreshUI();
-                                        Intent intent = new Intent(MainDrawerActivity.this, NewArticleActivity.class);
-                                        startActivity(intent);
-                                    }
-                                }
-                            });
+                    AuthUtils.signIn(MainDrawerActivity.this, mAuth, new Callable() {
+                        @Override
+                        public Object call() throws Exception {
+                            Intent intent = new Intent(MainDrawerActivity.this, NewArticleActivity.class);
+                            startActivity(intent);
+                            return null;
+                        }
+                    });
                 } else {
-                    UIUtils.showAuthDialog(MainDrawerActivity.this, false);
+                    UIUtils.showPreSellAuthDialog(MainDrawerActivity.this, false);
                 }
                 break;
             case PreferencesHelper.APP_STATE_UNREGISTERED:
-                UIUtils.showAuthDialog(MainDrawerActivity.this, true);
+                UIUtils.showPreSellAuthDialog(MainDrawerActivity.this, true);
                 break;
         }
     }
@@ -354,23 +346,27 @@ public class MainDrawerActivity extends AppCompatActivity
         if (appMenu != null) {
             switch (PreferencesHelper.getAppState(getApplicationContext())) {
                 case PreferencesHelper.APP_STATE_UNAUTHENTICATED:
-                    appMenu.getItem(0).setTitle("Sign In");
+                    appMenu.getItem(0).setTitle("Authenticate");
                     appMenu.getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
-                            Intent intent = new Intent(MainDrawerActivity.this, AuthenticationActivity.class);
-                            startActivity(intent);
+                            AuthUtils.signIn(MainDrawerActivity.this, mAuth, new Callable() {
+                                @Override
+                                public Object call() throws Exception {
+                                    refreshUI();
+                                    return null;
+                                }
+                            });
                             return false;
                         }
                     });
                     break;
                 case PreferencesHelper.APP_STATE_UNREGISTERED:
-                    appMenu.getItem(0).setTitle("Register");
+                    appMenu.getItem(0).setTitle("Authenticate");
                     appMenu.getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
-                            Intent intent = new Intent(MainDrawerActivity.this, RegistrationActivity.class);
-                            startActivity(intent);
+                            UIUtils.showAuthDialog(MainDrawerActivity.this);
                             return false;
                         }
                     });
@@ -383,6 +379,7 @@ public class MainDrawerActivity extends AppCompatActivity
                             FirebaseAuth.getInstance().signOut();
                             PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_UNAUTHENTICATED);
                             refreshUI();
+
                             return false;
                         }
                     });

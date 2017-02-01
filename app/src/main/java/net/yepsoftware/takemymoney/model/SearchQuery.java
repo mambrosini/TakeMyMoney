@@ -16,10 +16,11 @@ public class SearchQuery {
     public SearchQuery(String searchText) {
         String query;
         String [] strings = searchText.split("\\s+");
-        query = "(title:" + strings[0] + " OR description:" + strings[0] + ")";
+        query = "((title:" + strings[0] + " OR description:" + strings[0] + ")";
         for (int i = 1; i < strings.length; i++) {
             query = query + " OR (title:" + strings[i] + " OR description:" + strings[i] + ")";
         }
+        query = query + ") AND (state:ACTIVE)";
         this.q = query;
     }
 

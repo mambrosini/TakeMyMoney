@@ -67,7 +67,7 @@ public class PreferencesHelper {
 
     public static boolean isAutoLogin(Context context){
         SharedPreferences preferences = context.getSharedPreferences(SARED_PREFS_NAME, Context.MODE_PRIVATE);
-        return preferences.getBoolean(AUTOMATIC_LOGIN_PREF, false);
+        return preferences.getBoolean(AUTOMATIC_LOGIN_PREF, true);
     }
 
     public static void saveUserId(Context context, String userId){
@@ -89,7 +89,7 @@ public class PreferencesHelper {
         saveUserId(context, "");
         saveSecondaryMail(context, "");
         savePhone(context, "");
-        setAutoLogin(context, false);
+        setAutoLogin(context, true);
     }
 
     public static void setTestAccount(Context context){

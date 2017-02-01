@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
@@ -19,6 +21,7 @@ import android.widget.TextView;
 import net.yepsoftware.takemymoney.R;
 import net.yepsoftware.takemymoney.activities.AuthenticationActivity;
 import net.yepsoftware.takemymoney.activities.RegistrationActivity;
+import net.yepsoftware.takemymoney.model.User;
 
 /**
  * Created by Maxi on 16/1/2017.
@@ -51,7 +54,39 @@ public class UIUtils {
         return progressDialog;
     }
 
-    public static void showAuthDialog(final Activity activity, boolean isRegVisible){
+    public static void showAuthDialog(final Activity activity){
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
+        LayoutInflater inflater = activity.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.custom_auth_dialog, null);
+        dialogBuilder.setView(dialogView);
+        LinearLayout regLayout = (LinearLayout) dialogView.findViewById(R.id.regLayout);
+        Button regButton = (Button) dialogView.findViewById(R.id.button);
+        Button signButton = (Button) dialogView.findViewById(R.id.button2);
+        TextView regMessage = (TextView) dialogView.findViewById(R.id.label);
+        TextView signMessage = (TextView) dialogView.findViewById(R.id.label2);
+        regMessage.setText("If you don't have an account");
+        signMessage.setText("or if you already have one");
+        regButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alertDialog.dismiss();
+                Intent intent = new Intent(activity, RegistrationActivity.class);
+                activity.startActivity(intent);
+            }
+        });
+        signButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alertDialog.dismiss();
+                Intent intent = new Intent(activity, AuthenticationActivity.class);
+                activity.startActivity(intent);
+            }
+        });
+        alertDialog = dialogBuilder.create();
+        alertDialog.show();
+    }
+
+    public static void showPreSellAuthDialog(final Activity activity, boolean isRegVisible){
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
         LayoutInflater inflater = activity.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.custom_auth_dialog, null);
@@ -84,6 +119,43 @@ public class UIUtils {
             signMessage.setText("You need to Sign in in order to be able to sell");
         }
         alertDialog = dialogBuilder.create();
+        alertDialog.show();
+    }
+
+    public static void showContactInfoDialog(final Activity activity, User user){
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
+        LayoutInflater inflater = activity.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.custom_user_info_dialog, null);
+        dialogBuilder.setView(dialogView);
+        LinearLayout phoneLayout = (LinearLayout) dialogView.findViewById(R.id.phoneLayout);
+        LinearLayout secondaryMailLayout = (LinearLayout) dialogView.findViewById(R.id.secondaryMailLayout);
+        TextView phoneText = (TextView) dialogView.findViewById(R.id.text);
+        TextView mailText = (TextView) dialogView.findViewById(R.id.text2);
+        TextView secondaryMailText = (TextView) dialogView.findViewById(R.id.text3);
+
+        Button dismissButton = (Button) dialogView.findViewById(R.id.dismissButton);
+        dismissButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                alertDialog.dismiss();
+            }
+        });
+
+        mailText.setText(user.email);
+        if (user.secondaryEmail == null || user.secondaryEmail.equals("") || user.secondaryEmail.equals("null")){
+            secondaryMailLayout.setVisibility(View.GONE);
+        } else {
+            secondaryMailText.setText(user.secondaryEmail);
+        }
+
+        if (user.phone == null || user.phone.equals("")  || user.phone.equals("null")){
+            phoneLayout.setVisibility(View.GONE);
+        } else {
+            phoneText.setText(user.phone);
+        }
+
+        alertDialog = dialogBuilder.create();
+        alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         alertDialog.show();
     }
 }

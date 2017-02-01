@@ -135,10 +135,10 @@ public class SearchFragment extends Fragment {
                                     if (hitsArrayList != null && hitsArrayList.size() > 0) {
                                         for (Map<String, Object> hitMap : hitsArrayList) {
                                             Map<String, Object> detailsMap = (Map<String, Object>) hitMap.get("_source");
-                                            searchedArticles.add(new Article(detailsMap.get("uid").toString(), detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price")))));
+                                            searchedArticles.add(new Article(detailsMap.get("uid").toString(), detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price"))), Article.State.ACTIVE));
                                         }
                                     } else {
-                                        searchedArticles.add(new Article("", "Didn't find a match for your search...", "", 0.0));
+                                        searchedArticles.add(new Article("", "Didn't find a match for your search...", "", 0.0, Article.State.ACTIVE));
                                     }
                                     progressBar.setVisibility(View.GONE);
                                     articleListAdapter.notifyDataSetChanged();
@@ -189,13 +189,15 @@ public class SearchFragment extends Fragment {
         searchListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getActivity(), ArticleDetailActivity.class);
-                Article article = searchedArticles.get(position);
-                intent.putExtra("uid", article.uid);
-                intent.putExtra("title", article.title);
-                intent.putExtra("description", article.description);
-                intent.putExtra("price", article.price);
-                startActivity(intent);
+                if (((Article)searchedArticles.get(position)).uid != "") {
+                    Intent intent = new Intent(getActivity(), ArticleDetailActivity.class);
+                    Article article = searchedArticles.get(position);
+                    intent.putExtra("uid", article.uid);
+                    intent.putExtra("title", article.title);
+                    intent.putExtra("description", article.description);
+                    intent.putExtra("price", article.price);
+                    startActivity(intent);
+                }
             }
         });
 

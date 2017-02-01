@@ -35,7 +35,8 @@
         <activity
             android:name=".activities.ArticleDetailActivity"
             android:parentActivityName=".activities.MainDrawerActivity" />
-        <activity android:name=".activities.ContactInfoActivity"></activity>
+        <activity android:name=".activities.ContactInfoActivity"
+            android:parentActivityName=".activities.MainDrawerActivity" />
     </application>
 
 </manifest>

@@ -5,14 +5,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -21,8 +28,10 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import net.yepsoftware.takemymoney.R;
 import net.yepsoftware.takemymoney.activities.AuthenticationActivity;
+import net.yepsoftware.takemymoney.activities.NewArticleActivity;
 import net.yepsoftware.takemymoney.activities.RegistrationActivity;
 import net.yepsoftware.takemymoney.adapters.ArticleListAdapter;
+import net.yepsoftware.takemymoney.helpers.AuthUtils;
 import net.yepsoftware.takemymoney.helpers.PreferencesHelper;
 import net.yepsoftware.takemymoney.helpers.UIUtils;
 import net.yepsoftware.takemymoney.model.Article;
@@ -30,6 +39,7 @@ import net.yepsoftware.takemymoney.model.SearchQuery;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -53,6 +63,8 @@ public class MyArticlesFragment extends Fragment {
     private TextView label2;
     private Button button2;
 
+    private FirebaseAuth mAuth;
+
     private OnFragmentInteractionListener mListener;
 
     public MyArticlesFragment() {
@@ -75,6 +87,8 @@ public class MyArticlesFragment extends Fragment {
         label2 = (TextView)view.findViewById(R.id.label2);
         button2 = (Button) view.findViewById(R.id.button2);
         listView = (ListView) view.findViewById(R.id.listView);
+
+        mAuth = FirebaseAuth.getInstance();
 
         return view;
     }
@@ -165,10 +179,10 @@ public class MyArticlesFragment extends Fragment {
                     if (hitsArrayList != null && hitsArrayList.size() > 0) {
                         for (Map<String, Object> hitMap : hitsArrayList) {
                             Map<String, Object> detailsMap = (Map<String, Object>) hitMap.get("_source");
-                            articles.add(new Article(detailsMap.get("uid").toString(), detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price")))));
+                            articles.add(new Article(detailsMap.get("uid").toString(), detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price"))), Article.State.ACTIVE));
                         }
                     } else {
-                        articles.add(new Article("", "You don't have any articles posted...", "", 0.0));
+                        articles.add(new Article("", "You don't have any articles posted...", "", 0.0, Article.State.ACTIVE));
                     }
                     progressDialog.dismiss();
                     articleListAdapter.notifyDataSetChanged();
@@ -196,8 +210,7 @@ public class MyArticlesFragment extends Fragment {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), AuthenticationActivity.class);
-                startActivity(intent);
+                signIn();
             }
         });
     }
@@ -220,8 +233,17 @@ public class MyArticlesFragment extends Fragment {
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), AuthenticationActivity.class);
-                startActivity(intent);
+                signIn();
+            }
+        });
+    }
+
+    private void signIn() {
+        AuthUtils.signIn(getActivity(), mAuth, new Callable() {
+            @Override
+            public Object call() throws Exception {
+                customizeLayout();
+                return null;
             }
         });
     }

@@ -11,18 +11,27 @@ import java.util.Map;
  */
 @IgnoreExtraProperties
 public class Article {
+
     public String uid;
     public String title;
     public String description;
+    public State state;
     public double price;
+
+    public enum State {
+        ACTIVE,
+        SOLD,
+        DISABLED;
+    }
 
     public Article(){}
 
-    public Article(String uid, String title, String description, double price) {
+    public Article(String uid, String title, String description, double price, State state) {
         this.uid = uid;
         this.title = title;
         this.description = description;
         this.price = price;
+        this.state = state;
     }
 
     @Exclude
@@ -32,6 +41,7 @@ public class Article {
         result.put("title", title);
         result.put("description", description);
         result.put("price", price);
+        result.put("state", state.toString());
         return result;
     }
 }
