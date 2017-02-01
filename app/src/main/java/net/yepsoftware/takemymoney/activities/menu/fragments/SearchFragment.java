@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -43,6 +44,7 @@ import net.yepsoftware.takemymoney.helpers.PreferencesHelper;
 import net.yepsoftware.takemymoney.model.Article;
 import net.yepsoftware.takemymoney.model.SearchQuery;
 
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -135,10 +137,11 @@ public class SearchFragment extends Fragment {
                                     if (hitsArrayList != null && hitsArrayList.size() > 0) {
                                         for (Map<String, Object> hitMap : hitsArrayList) {
                                             Map<String, Object> detailsMap = (Map<String, Object>) hitMap.get("_source");
-                                            searchedArticles.add(new Article(detailsMap.get("uid").toString(), detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price"))), Article.State.ACTIVE));
+                                            ArrayList<String> images = (ArrayList<String>) detailsMap.get("images");
+                                            searchedArticles.add(new Article(detailsMap.get("uid").toString(), detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price"))), images, Article.State.ACTIVE));
                                         }
                                     } else {
-                                        searchedArticles.add(new Article("", "Didn't find a match for your search...", "", 0.0, Article.State.ACTIVE));
+                                        searchedArticles.add(new Article("", "Didn't find a match for your search...", "", 0.0, null, Article.State.ACTIVE));
                                     }
                                     progressBar.setVisibility(View.GONE);
                                     articleListAdapter.notifyDataSetChanged();
@@ -173,7 +176,7 @@ public class SearchFragment extends Fragment {
         });
 
         searchedArticles = new ArrayList<>();
-        articleListAdapter = new ArticleListAdapter(getActivity(), searchedArticles);
+        articleListAdapter = new ArticleListAdapter(getActivity(), searchedArticles, false);
         searchListView.setAdapter(articleListAdapter);
 
         fadeOut = new AlphaAnimation(1, 0);
@@ -196,6 +199,7 @@ public class SearchFragment extends Fragment {
                     intent.putExtra("title", article.title);
                     intent.putExtra("description", article.description);
                     intent.putExtra("price", article.price);
+                    intent.putExtra("images", article.images);
                     startActivity(intent);
                 }
             }
@@ -233,7 +237,6 @@ public class SearchFragment extends Fragment {
                 imageView.setVisibility(View.GONE);
             }
         }, 150);
-        searchListView.setVisibility(View.VISIBLE);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -273,5 +276,19 @@ public class SearchFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onSearchInteraction(Uri uri);
+    }
+
+    public boolean isCloseable(){
+        if (imageView.getVisibility() == View.GONE){
+            imageView.setVisibility(View.VISIBLE);
+            imageView.startAnimation(fadeIn);
+            searchLayout.setLayoutParams(searchParams);
+            searchedArticles.clear();
+            searchEditText.setText("");
+            articleListAdapter.notifyDataSetChanged();
+            return false;
+        } else {
+            return true;
+        }
     }
 }

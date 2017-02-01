@@ -3,43 +3,46 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="net.yepsoftware.takemymoney.activities.menu.fragments.SettingsFragment">
 
-    <TextView
-        android:id="@+id/label"
+    <LinearLayout
+        android:id="@+id/authLayout"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:fontFamily="sans-serif-light"
-        tools:text="You need to register in order change settings."
-        android:padding="15dp"/>
-    <Button
-        android:id="@+id/button"
-        tools:text="Register"
-        android:layout_margin="10dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/ButtonStyle"/>
+        android:padding="16dp">
+        <TextView
+            android:id="@+id/label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-light"
+            tools:text="You need to register in order change settings."
+            android:padding="15dp"/>
+        <Button
+            android:id="@+id/button"
+            tools:text="Register"
+            android:layout_margin="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/ButtonStyle"/>
 
-    <TextView
-        android:id="@+id/label2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:fontFamily="sans-serif-light"
-        android:text="Or if you already have an account you can Sign in"
-        android:padding="15dp"/>
-    <Button
-        android:id="@+id/button2"
-        android:text="Sign in"
-        android:layout_margin="10dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/ButtonStyle"/>
+        <TextView
+            android:id="@+id/label2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-light"
+            android:text="Or if you already have an account you can Sign in"
+            android:padding="15dp"/>
+        <Button
+            android:id="@+id/button2"
+            android:text="Sign in"
+            android:layout_margin="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/ButtonStyle"/>
+    </LinearLayout>
 
     <Switch
         android:id="@+id/autoLoginSwitch"

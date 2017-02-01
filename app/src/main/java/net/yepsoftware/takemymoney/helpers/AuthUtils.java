@@ -22,7 +22,7 @@ import java.util.concurrent.Callable;
  */
 public class AuthUtils {
     public static void signIn(final Context context, FirebaseAuth mAuth, final Callable callable){
-        if (PreferencesHelper.isAutoLogin(context)){
+        if (PreferencesHelper.isAutoLogin(context) && PreferencesHelper.getAppState(context).equals(PreferencesHelper.APP_STATE_UNAUTHENTICATED)){
             final ProgressDialog progressDialog = UIUtils.showProgressDialog(context,"Signin in...");
             firebaseSignIn(context,
                     mAuth,

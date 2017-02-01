@@ -56,6 +56,19 @@
                 android:fontFamily="sans-serif-light"
                 tools:text="Description"/>
 
+            <GridView
+                android:layout_marginTop="20dp"
+                android:id="@+id/imageGridView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnWidth="90dp"
+                android:numColumns="auto_fit"
+                android:verticalSpacing="0dp"
+                android:horizontalSpacing="0dp"
+                android:gravity="center"
+                android:background="#87000000"
+                android:padding="10dp" />
+
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="0dp"

@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -57,6 +58,7 @@ public class MyArticlesFragment extends Fragment {
     private DatabaseReference requestDBRef;
     private DatabaseReference responseDBRef;
     private ProgressDialog progressDialog;
+    private LinearLayout authLayout;
 
     private TextView label;
     private Button button;
@@ -87,6 +89,7 @@ public class MyArticlesFragment extends Fragment {
         label2 = (TextView)view.findViewById(R.id.label2);
         button2 = (Button) view.findViewById(R.id.button2);
         listView = (ListView) view.findViewById(R.id.listView);
+        authLayout = (LinearLayout) view.findViewById(R.id.authLayout);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -153,13 +156,14 @@ public class MyArticlesFragment extends Fragment {
     }
 
     private void setLayoutAuthenticatedState(){
+        authLayout.setVisibility(View.GONE);
         label.setVisibility(View.GONE);
         button.setVisibility(View.GONE);
         label2.setVisibility(View.GONE);
         button2.setVisibility(View.GONE);
         listView.setVisibility(View.VISIBLE);
         articles = new ArrayList<>();
-        articleListAdapter = new ArticleListAdapter(getActivity(), articles);
+        articleListAdapter = new ArticleListAdapter(getActivity(), articles, true);
         listView.setAdapter(articleListAdapter);
 
         progressDialog = UIUtils.showProgressDialog(getActivity(), "Retrieving posts...");
@@ -179,10 +183,10 @@ public class MyArticlesFragment extends Fragment {
                     if (hitsArrayList != null && hitsArrayList.size() > 0) {
                         for (Map<String, Object> hitMap : hitsArrayList) {
                             Map<String, Object> detailsMap = (Map<String, Object>) hitMap.get("_source");
-                            articles.add(new Article(detailsMap.get("uid").toString(), detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price"))), Article.State.ACTIVE));
+                            articles.add(new Article(detailsMap.get("uid").toString(), detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price"))), null, Article.State.ACTIVE));
                         }
                     } else {
-                        articles.add(new Article("", "You don't have any articles posted...", "", 0.0, Article.State.ACTIVE));
+                        articles.add(new Article("", "You don't have any articles posted...", "", 0.0,  null, Article.State.ACTIVE));
                     }
                     progressDialog.dismiss();
                     articleListAdapter.notifyDataSetChanged();
@@ -200,6 +204,7 @@ public class MyArticlesFragment extends Fragment {
     }
 
     private void setLayoutUnauthenticatedState(){
+        authLayout.setVisibility(View.VISIBLE);
         listView.setVisibility(View.GONE);
         label2.setVisibility(View.GONE);
         button2.setVisibility(View.GONE);
@@ -216,6 +221,7 @@ public class MyArticlesFragment extends Fragment {
     }
 
     private void setLayoutUnregisteredState(){
+        authLayout.setVisibility(View.VISIBLE);
         listView.setVisibility(View.GONE);
         label.setVisibility(View.VISIBLE);
         button.setVisibility(View.VISIBLE);

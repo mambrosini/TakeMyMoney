@@ -4,4 +4,7 @@
     <color name="colorPrimaryDark">#E64A19</color>
     <color name="colorAccent">#FF9800</color>
     <color name="divider">#c4c4c4</color>
+    <color name="articleActive">#157e21</color>
+    <color name="articleDisabled">#990d0d</color>
+    <color name="articleSold">#767676</color>
 </resources>

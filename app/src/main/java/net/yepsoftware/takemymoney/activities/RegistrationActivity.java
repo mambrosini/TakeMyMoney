@@ -75,7 +75,12 @@ public class RegistrationActivity extends ChildActivity {
                     User dbUser = new User(key, email.getText().toString(), secondaryEmail.getText().toString(), phone.getText().toString());
                     usersDBRef.child(key).setValue(dbUser);
 
+                    PreferencesHelper.saveMail(getApplicationContext(), email.getText().toString());
+                    PreferencesHelper.savePassword(getApplicationContext(), password.getText().toString());
+                    PreferencesHelper.setAutoLogin(getApplicationContext(), checkBox.isChecked());
                     PreferencesHelper.saveUserId(getApplicationContext(), key);
+                    PreferencesHelper.savePhone(getApplicationContext(), phone.getText().toString());
+                    PreferencesHelper.saveSecondaryMail(getApplicationContext(), secondaryEmail.getText().toString());
 
                     finish();
                     if (navigateToNewArticle){
@@ -109,14 +114,6 @@ public class RegistrationActivity extends ChildActivity {
         if (!email.getText().toString().equals("") &&
                 !password.getText().toString().equals("")) {
             progressDialog = UIUtils.showProgressDialog(RegistrationActivity.this, "Registering user...");
-            PreferencesHelper.saveMail(getApplicationContext(), email.getText().toString());
-            if (checkBox.isChecked()){
-                PreferencesHelper.savePassword(getApplicationContext(), password.getText().toString());
-                PreferencesHelper.setAutoLogin(getApplicationContext(), true);
-            } else {
-                PreferencesHelper.setAutoLogin(getApplicationContext(), false);
-            }
-
             mAuth.createUserWithEmailAndPassword(email.getText().toString(), password.getText().toString())
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override

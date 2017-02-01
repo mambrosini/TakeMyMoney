@@ -68,18 +68,19 @@ public class AuthenticationActivity extends ChildActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     Log.d("FirebaseAuth", "User signed in.");
+                    PreferencesHelper.setAutoLogin(getApplicationContext(), checkBox.isChecked());
                     if (PreferencesHelper.getAppState(getApplicationContext()).equals(PreferencesHelper.APP_STATE_UNREGISTERED)){
                         PreferencesHelper.saveUserId(getApplicationContext(), user.getUid());
+                        PreferencesHelper.saveMail(getApplicationContext(), email.getText().toString());
+                        PreferencesHelper.savePassword(getApplicationContext(), password.getText().toString());
                         usersDBRef = FirebaseDatabase.getInstance().getReference().child("users").child(user.getUid());
                         usersDBRef.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_AUTHENTICATED);
                                 PreferencesHelper.savePhone(getApplicationContext(), String.valueOf(dataSnapshot.child("phone").getValue(String.class)));
                                 PreferencesHelper.saveSecondaryMail(getApplicationContext(), dataSnapshot.child("secondaryEmail").getValue(String.class));
+
                                 progressDialog.dismiss();
-                                Toast.makeText(AuthenticationActivity.this, "Profile updated",
-                                        Toast.LENGTH_SHORT).show();
                                 finish();
                                 if (navigateToNewArticle){
                                     Intent intent = new Intent(AuthenticationActivity.this, NewArticleActivity.class);
@@ -93,6 +94,7 @@ public class AuthenticationActivity extends ChildActivity {
                             }
                         });
                     }
+                    PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_AUTHENTICATED);
                 } else {
                     Log.d("FirebaseAuth", "User signed out.");
                 }
@@ -102,6 +104,8 @@ public class AuthenticationActivity extends ChildActivity {
 
     public void signInWithMailAndPassword(View v){
         UIUtils.hideKeyboard(AuthenticationActivity.this);
+        email.clearFocus();
+        password.clearFocus();
         if (!email.getText().toString().equals("") &&
                 !password.getText().toString().equals("")) {
             progressDialog = UIUtils.showProgressDialog(AuthenticationActivity.this, "Signin in...");
@@ -113,20 +117,6 @@ public class AuthenticationActivity extends ChildActivity {
                             if (!task.isSuccessful()) {
                                 Toast.makeText(AuthenticationActivity.this, "Sign in failed!",
                                         Toast.LENGTH_SHORT).show();
-                            } else {
-                                PreferencesHelper.setAutoLogin(getApplicationContext(), checkBox.isChecked());;
-                                if (PreferencesHelper.getAppState(getApplicationContext()).equals(PreferencesHelper.APP_STATE_UNREGISTERED)){
-                                    PreferencesHelper.saveMail(getApplicationContext(), email.getText().toString());
-                                    PreferencesHelper.savePassword(getApplicationContext(), password.getText().toString());
-                                } else {
-                                    PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_AUTHENTICATED);
-                                    progressDialog.dismiss();
-                                    finish();
-                                    if (navigateToNewArticle){
-                                        Intent intent = new Intent(AuthenticationActivity.this, NewArticleActivity.class);
-                                        startActivity(intent);
-                                    }
-                                }
                             }
                         }
                     });

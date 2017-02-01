@@ -108,7 +108,7 @@ public class MainDrawerActivity extends AppCompatActivity
             PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_UNAUTHENTICATED);
         }
 
-        if (PreferencesHelper.isAutoLogin(getApplicationContext())) {
+        if (PreferencesHelper.isAutoLogin(getApplicationContext())  && PreferencesHelper.getAppState(MainDrawerActivity.this).equals(PreferencesHelper.APP_STATE_UNAUTHENTICATED)) {
             progressDialog = UIUtils.showProgressDialog(MainDrawerActivity.this, "Signin in...");
             firebaseSignIn(PreferencesHelper.getMail(getApplicationContext()),
                     PreferencesHelper.getPassword(getApplicationContext()),
@@ -214,7 +214,10 @@ public class MainDrawerActivity extends AppCompatActivity
         } else if (currentPage != PAGE_SEARCH){
             navigate(PAGE_SEARCH);
         } else {
-            super.onBackPressed();
+            SearchFragment searchFragment = ((SearchFragment)getSupportFragmentManager().getFragments().get(0));
+            if (searchFragment != null && searchFragment.isCloseable()) {
+                super.onBackPressed();
+            }
         }
     }
 

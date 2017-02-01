@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -41,6 +42,7 @@ public class SettingsFragment extends Fragment {
     private TextView label2;
     private Button button2;
     private Switch autoLoginSwitch;
+    private LinearLayout authLayout;
 
     private OnFragmentInteractionListener mListener;
 
@@ -65,6 +67,7 @@ public class SettingsFragment extends Fragment {
         label2 = (TextView)view.findViewById(R.id.label2);
         button2 = (Button) view.findViewById(R.id.button2);
         autoLoginSwitch = (Switch) view.findViewById(R.id.autoLoginSwitch);
+        authLayout = (LinearLayout) view.findViewById(R.id.authLayout);
 
         return view;
     }
@@ -129,14 +132,10 @@ public class SettingsFragment extends Fragment {
     }
 
     private void setLayoutAuthenticatedState(){
-        label.setVisibility(View.GONE);
-        button.setVisibility(View.GONE);
-        label2.setVisibility(View.GONE);
-        button2.setVisibility(View.GONE);
-        listView.setVisibility(View.VISIBLE);
+        authLayout.setVisibility(View.GONE);
         autoLoginSwitch.setVisibility(View.VISIBLE);
         settingsList = new ArrayList<>();
-        settingsList.add("My profile");
+        settingsList.add("Contact Information");
         ArrayAdapter arrayAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, settingsList);
         listView.setAdapter(arrayAdapter);
         autoLoginSwitch.setChecked(PreferencesHelper.isAutoLogin(getActivity()));
@@ -162,6 +161,7 @@ public class SettingsFragment extends Fragment {
     }
 
     private void setLayoutUnauthenticatedState(){
+        authLayout.setVisibility(View.VISIBLE);
         label2.setVisibility(View.GONE);
         button2.setVisibility(View.GONE);
         listView.setVisibility(View.GONE);
@@ -180,6 +180,7 @@ public class SettingsFragment extends Fragment {
     }
 
     private void setLayoutUnregisteredState(){
+        authLayout.setVisibility(View.VISIBLE);
         listView.setVisibility(View.GONE);
         autoLoginSwitch.setVisibility(View.GONE);
         label.setVisibility(View.VISIBLE);

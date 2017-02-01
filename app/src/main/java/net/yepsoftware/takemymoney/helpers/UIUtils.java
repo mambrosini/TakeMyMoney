@@ -1,12 +1,16 @@
 package net.yepsoftware.takemymoney.helpers;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -44,7 +48,7 @@ public class UIUtils {
         }
     }
 
-    public static ProgressDialog showProgressDialog(Context context, String text){
+    public static ProgressDialog showProgressDialog(Context context, String text) {
         final ProgressDialog progressDialog = new ProgressDialog(context);
         progressDialog.setMessage(text);
         progressDialog.setIndeterminate(true);
@@ -54,7 +58,7 @@ public class UIUtils {
         return progressDialog;
     }
 
-    public static void showAuthDialog(final Activity activity){
+    public static void showAuthDialog(final Activity activity) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
         LayoutInflater inflater = activity.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.custom_auth_dialog, null);
@@ -86,7 +90,7 @@ public class UIUtils {
         alertDialog.show();
     }
 
-    public static void showPreSellAuthDialog(final Activity activity, boolean isRegVisible){
+    public static void showPreSellAuthDialog(final Activity activity, boolean isRegVisible) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
         LayoutInflater inflater = activity.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.custom_auth_dialog, null);
@@ -104,7 +108,7 @@ public class UIUtils {
                 activity.startActivity(intent);
             }
         });
-        if (isRegVisible){
+        if (isRegVisible) {
             regButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -122,16 +126,48 @@ public class UIUtils {
         alertDialog.show();
     }
 
-    public static void showContactInfoDialog(final Activity activity, User user){
+    public static void showContactInfoDialog(final Activity activity, User user, final String articleTitle) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
         LayoutInflater inflater = activity.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.custom_user_info_dialog, null);
         dialogBuilder.setView(dialogView);
+        final LinearLayout mailLayout = (LinearLayout) dialogView.findViewById(R.id.mailLayout);
         LinearLayout phoneLayout = (LinearLayout) dialogView.findViewById(R.id.phoneLayout);
-        LinearLayout secondaryMailLayout = (LinearLayout) dialogView.findViewById(R.id.secondaryMailLayout);
-        TextView phoneText = (TextView) dialogView.findViewById(R.id.text);
-        TextView mailText = (TextView) dialogView.findViewById(R.id.text2);
-        TextView secondaryMailText = (TextView) dialogView.findViewById(R.id.text3);
+        final LinearLayout secondaryMailLayout = (LinearLayout) dialogView.findViewById(R.id.secondaryMailLayout);
+        final TextView phoneText = (TextView) dialogView.findViewById(R.id.text);
+        final TextView mailText = (TextView) dialogView.findViewById(R.id.text2);
+        final TextView secondaryMailText = (TextView) dialogView.findViewById(R.id.text3);
+
+        mailLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("plain/text");
+                intent.putExtra(Intent.EXTRA_EMAIL, new String[] { mailText.getText().toString() });
+                intent.putExtra(Intent.EXTRA_SUBJECT, "I'm interested in \"" + articleTitle + "\"");
+                activity.startActivity(Intent.createChooser(intent, "Send Email"));
+            }
+        });
+
+        secondaryMailLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("plain/text");
+                intent.putExtra(Intent.EXTRA_EMAIL, new String[] { secondaryMailText.getText().toString() });
+                intent.putExtra(Intent.EXTRA_SUBJECT, "I'm interested in \"" + articleTitle + "\"");
+                activity.startActivity(Intent.createChooser(intent, "Send Email"));
+            }
+        });
+
+        phoneLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData( Uri.parse("tel:" + phoneText.getText().toString()));
+                activity.startActivity(intent);
+            }
+        });
 
         Button dismissButton = (Button) dialogView.findViewById(R.id.dismissButton);
         dismissButton.setOnClickListener(new View.OnClickListener() {

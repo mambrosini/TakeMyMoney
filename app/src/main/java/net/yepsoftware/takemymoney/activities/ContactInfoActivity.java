@@ -1,5 +1,7 @@
 package net.yepsoftware.takemymoney.activities;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.provider.Contacts;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
@@ -10,8 +12,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import net.yepsoftware.takemymoney.R;
 import net.yepsoftware.takemymoney.helpers.PreferencesHelper;
@@ -28,6 +33,7 @@ public class ContactInfoActivity extends ChildActivity {
     private boolean needToSave;
 
     private DatabaseReference usersDBRef;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +69,26 @@ public class ContactInfoActivity extends ChildActivity {
                     PreferencesHelper.saveSecondaryMail(getApplicationContext(), secondaryEmail.getText().toString());
                 }
                 finish();
+            }
+        });
+
+        progressDialog = UIUtils.showProgressDialog(ContactInfoActivity.this, "Getting info...");
+        usersDBRef = FirebaseDatabase.getInstance().getReference().child("users").child(PreferencesHelper.getUserId(ContactInfoActivity.this));
+        usersDBRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                PreferencesHelper.savePhone(getApplicationContext(), String.valueOf(dataSnapshot.child("phone").getValue(String.class)));
+                PreferencesHelper.saveSecondaryMail(getApplicationContext(), dataSnapshot.child("secondaryEmail").getValue(String.class));
+                email.setText(PreferencesHelper.getMail(getApplicationContext()));
+                secondaryEmail.setText(PreferencesHelper.getSecondaryMail(getApplicationContext()));
+                phone.setText(PreferencesHelper.getPhone(getApplicationContext()));
+                progressDialog.dismiss();
+                usersDBRef = FirebaseDatabase.getInstance().getReference().child("users");
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
 
