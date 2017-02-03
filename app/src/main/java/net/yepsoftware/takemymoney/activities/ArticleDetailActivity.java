@@ -171,12 +171,20 @@ public class ArticleDetailActivity extends ChildActivity {
                                     setImage(bmp, imageView3, overlay3, filePath);
                                     break;
                             }
-                            Toast.makeText(getApplicationContext(),
-                                    "Download finished",
-                                    Toast.LENGTH_SHORT).show();
                         } else {
+                            switch (intent.getIntExtra(ImageDownloadService.IMAGE_NUMBER, -1)){
+                                case 0:
+                                    overlay1.setVisibility(View.GONE);
+                                    break;
+                                case 1:
+                                    overlay2.setVisibility(View.GONE);
+                                    break;
+                                case 2:
+                                    overlay3.setVisibility(View.GONE);
+                                    break;
+                            }
                             Toast.makeText(getApplicationContext(),
-                                    "Error",
+                                    "Error downloading image",
                                     Toast.LENGTH_SHORT).show();
                         }
                         break;
@@ -196,7 +204,7 @@ public class ArticleDetailActivity extends ChildActivity {
             public void onClick(View v) {
                 Intent intent = new Intent();
                 intent.setAction(Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.parse(filePath), "image/*");
+                intent.setDataAndType(Uri.parse("file://" + filePath), "image/*");
                 startActivity(intent);
             }
         });
