@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Environment;
 import android.support.v4.content.LocalBroadcastManager;
 
+import net.yepsoftware.takemymoney.helpers.ImageHelper;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -55,6 +57,8 @@ public class ImageDownloadService extends IntentService {
             is.close();
 
             String filePath = downloadFile.getPath();
+
+            ImageHelper.scanMedia(getApplicationContext(), filePath);
 
             LocalBroadcastManager broadcaster = LocalBroadcastManager.getInstance(getApplicationContext());
             Intent broadcastIntent = new Intent(IMAGE_DOWLOADED_BROADCAST);

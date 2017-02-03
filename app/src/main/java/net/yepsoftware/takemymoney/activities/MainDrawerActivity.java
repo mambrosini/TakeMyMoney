@@ -354,7 +354,7 @@ public class MainDrawerActivity extends AppCompatActivity
                 case PreferencesHelper.APP_STATE_UNREGISTERED:
                     appMenu.clear();
                     appMenu.add(0,MENU_AUTHENTICATE_SIGN, 0, "Authenticate");
-//                    appMenu.add(0,MENU_LINK_TEST_ACCOUNT, 0, "Link Test Account");
+                    appMenu.add(0,MENU_LINK_TEST_ACCOUNT, 0, "Link Test Account");
                     break;
                 case PreferencesHelper.APP_STATE_AUTHENTICATED:
                     appMenu.clear();
