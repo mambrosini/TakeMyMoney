@@ -204,7 +204,8 @@ public class ArticleDetailActivity extends ChildActivity {
             public void onClick(View v) {
                 Intent intent = new Intent();
                 intent.setAction(Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.parse("file://" + filePath), "image/*");
+                intent.setData(Uri.parse("file:/" + filePath));
+                intent.setType("image/*");
                 startActivity(intent);
             }
         });
