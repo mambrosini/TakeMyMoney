@@ -51,4 +51,15 @@ public class Article {
         result.put("images", images);
         return result;
     }
+
+    public static State stringToState(String state){
+        if (state.equals(State.ACTIVE.toString())){
+            return State.ACTIVE;
+        } else if (state.equals(State.SOLD.toString())){
+            return State.SOLD;
+        } else if (state.equals(State.DISABLED.toString())){
+            return State.DISABLED;
+        }
+        return null;
+    }
 }

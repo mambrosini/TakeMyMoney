@@ -200,6 +200,7 @@ public class SearchFragment extends Fragment {
                     intent.putExtra("description", article.description);
                     intent.putExtra("price", article.price);
                     intent.putExtra("images", article.images);
+                    intent.putExtra("state", article.state.toString());
                     intent.putExtra("FROM_MY_ARTICLES", false);
                     startActivity(intent);
                 }

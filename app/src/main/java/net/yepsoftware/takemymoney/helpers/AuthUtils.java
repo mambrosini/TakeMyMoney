@@ -14,6 +14,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
 import net.yepsoftware.takemymoney.activities.AuthenticationActivity;
+import net.yepsoftware.takemymoney.activities.MainDrawerActivity;
 
 import java.util.concurrent.Callable;
 
@@ -36,6 +37,9 @@ public class AuthUtils {
                                         Toast.LENGTH_SHORT).show();
                             } else {
                                 PreferencesHelper.setAppState(context, PreferencesHelper.APP_STATE_AUTHENTICATED);
+                                if (context instanceof MainDrawerActivity){
+                                    ((MainDrawerActivity)context).refreshUI();
+                                }
                                 try {
                                     callable.call();
                                 } catch (Exception e) {

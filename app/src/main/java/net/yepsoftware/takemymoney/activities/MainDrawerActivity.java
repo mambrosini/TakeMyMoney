@@ -49,12 +49,18 @@ public class MainDrawerActivity extends AppCompatActivity
     private Menu appMenu;
     private LinearLayout headerLayout;
     private FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener mAuthListener;
     private ProgressDialog progressDialog;
 
     public static final int PAGE_SEARCH = 0;
     public static final int PAGE_MY_ARTICLES = 1;
     public static final int PAGE_SETTINGS = 2;
+
+    public static final int MENU_AUTHENTICATE_REG = 0;
+    public static final int MENU_AUTHENTICATE_SIGN = 0;
+    public static final int MENU_SIGN_OUT = 1;
+    public static final int MENU_CHANGE_ACCOUNT = 2;
+    public static final int MENU_LINK_TEST_ACCOUNT = 3;
+
 
     private int currentPage;
 
@@ -87,22 +93,6 @@ public class MainDrawerActivity extends AppCompatActivity
         });
 
         mAuth = FirebaseAuth.getInstance();
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-//                FirebaseUser user = firebaseAuth.getCurrentUser();
-//                if (user != null) {
-//                    Log.d("FirebaseAuth", "User signed in.");
-//                    PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_AUTHENTICATED);
-//                } else {
-//                    Log.d("FirebaseAuth", "User signed out.");
-//                    if ( PreferencesHelper.getAppState(getApplicationContext()).equals(PreferencesHelper.APP_STATE_AUTHENTICATED)){
-//                        PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_UNAUTHENTICATED);
-//                    }
-//                }
-//                customizeDrawerHeader();
-            }
-        };
 
         if (PreferencesHelper.getAppState(getApplicationContext()).equals(PreferencesHelper.APP_STATE_AUTHENTICATED)) {
             PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_UNAUTHENTICATED);
@@ -159,15 +149,11 @@ public class MainDrawerActivity extends AppCompatActivity
     @Override
     public void onStart() {
         super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
-        }
     }
 
     private void customizeDrawerHeader() {
@@ -224,7 +210,6 @@ public class MainDrawerActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
         appMenu = menu;
         customizeMenu();
         return true;
@@ -238,14 +223,27 @@ public class MainDrawerActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_sign_in) {
+        if (id == MENU_AUTHENTICATE_REG) {
+            UIUtils.showAuthDialog(MainDrawerActivity.this);
             return true;
-        } else if (id == R.id.unlink_device){
+        } else if (id == MENU_AUTHENTICATE_SIGN){
+            UIUtils.showAuthDialog(MainDrawerActivity.this);
+            return true;
+        } else if (id == MENU_SIGN_OUT){
+            FirebaseAuth.getInstance().signOut();
+            PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_UNAUTHENTICATED);
+            refreshUI();
+            navigate(PAGE_SEARCH);
+            return true;
+        }  else if (id == MENU_CHANGE_ACCOUNT){
             FirebaseAuth.getInstance().signOut();
             PreferencesHelper.resetSettingsAndUnlinkDevice(MainDrawerActivity.this);
             refreshUI();
+            navigate(PAGE_SEARCH);
             return true;
-        } else if (id == R.id.link_device){
+        }
+
+        else if (id == MENU_LINK_TEST_ACCOUNT){
             progressDialog = UIUtils.showProgressDialog(MainDrawerActivity.this, "Signin in...");
             firebaseSignIn("test@takemymoney.com", "Maxman16",
                     new OnCompleteListener<AuthResult>() {
@@ -349,43 +347,19 @@ public class MainDrawerActivity extends AppCompatActivity
         if (appMenu != null) {
             switch (PreferencesHelper.getAppState(getApplicationContext())) {
                 case PreferencesHelper.APP_STATE_UNAUTHENTICATED:
-                    appMenu.getItem(0).setTitle("Authenticate");
-                    appMenu.getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem item) {
-                            AuthUtils.signIn(MainDrawerActivity.this, mAuth, new Callable() {
-                                @Override
-                                public Object call() throws Exception {
-                                    refreshUI();
-                                    return null;
-                                }
-                            });
-                            return false;
-                        }
-                    });
+                    appMenu.clear();
+                    appMenu.add(0,MENU_AUTHENTICATE_REG, 0, "Authenticate");
+                    appMenu.add(0, MENU_CHANGE_ACCOUNT, 0, "Change account");
                     break;
                 case PreferencesHelper.APP_STATE_UNREGISTERED:
-                    appMenu.getItem(0).setTitle("Authenticate");
-                    appMenu.getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem item) {
-                            UIUtils.showAuthDialog(MainDrawerActivity.this);
-                            return false;
-                        }
-                    });
+                    appMenu.clear();
+                    appMenu.add(0,MENU_AUTHENTICATE_SIGN, 0, "Authenticate");
+//                    appMenu.add(0,MENU_LINK_TEST_ACCOUNT, 0, "Link Test Account");
                     break;
                 case PreferencesHelper.APP_STATE_AUTHENTICATED:
-                    appMenu.getItem(0).setTitle("Sign Out");
-                    appMenu.getItem(0).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem item) {
-                            FirebaseAuth.getInstance().signOut();
-                            PreferencesHelper.setAppState(getApplicationContext(), PreferencesHelper.APP_STATE_UNAUTHENTICATED);
-                            refreshUI();
-
-                            return false;
-                        }
-                    });
+                    appMenu.clear();
+                    appMenu.add(0,MENU_SIGN_OUT, 0, "Sign Out");
+                    appMenu.add(0, MENU_CHANGE_ACCOUNT, 0, "Change account");
                     break;
             }
         }

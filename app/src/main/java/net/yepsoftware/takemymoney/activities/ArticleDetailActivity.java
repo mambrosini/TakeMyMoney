@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -30,8 +32,10 @@ import java.util.ArrayList;
 public class ArticleDetailActivity extends ChildActivity {
 
     private DatabaseReference usersDBRef;
+    private DatabaseReference articlesDBRef;
     private Article article;
     private ProgressDialog progressDialog;
+    private TextView stateTextView;
     private ImageView imageView1;
     private ImageView imageView2;
     private ImageView imageView3;
@@ -39,6 +43,12 @@ public class ArticleDetailActivity extends ChildActivity {
     private View overlay2;
     private View overlay3;
     private boolean fromMyArticles;
+
+    Menu menu;
+
+    private static final int MENU_SOLD = 0;
+    private static final int MENU_DISABLE = 1;
+    private static final int MENU_ACTIVATE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,13 +62,14 @@ public class ArticleDetailActivity extends ChildActivity {
                 getIntent().getStringExtra("description"),
                 getIntent().getDoubleExtra("price",-1),
                 images,
-                Article.State.ACTIVE);
+                Article.stringToState(getIntent().getStringExtra("state")));
 
         fromMyArticles = getIntent().getBooleanExtra("FROM_MY_ARTICLES", false);
 
         TextView title = (TextView) findViewById(R.id.title);
         TextView description = (TextView) findViewById(R.id.description);
         TextView price = (TextView) findViewById(R.id.price);
+        stateTextView = (TextView) findViewById(R.id.state);
         imageView1 = (ImageView) findViewById(R.id.image1);
         imageView2 = (ImageView) findViewById(R.id.image2);
         imageView3 = (ImageView) findViewById(R.id.image3);
@@ -113,8 +124,57 @@ public class ArticleDetailActivity extends ChildActivity {
 
         if (fromMyArticles){
             findViewById(R.id.button).setVisibility(View.GONE);
+            stateTextView.setText(article.state.toString());
+            articlesDBRef = FirebaseDatabase.getInstance().getReference().child("articles").child(getIntent().getStringExtra("articleKey"));
+        } else {
+            stateTextView.setVisibility(View.GONE);
         }
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (fromMyArticles){
+            this.menu = menu;
+            if (article.state.equals(Article.State.ACTIVE)){
+                menu.add(0,MENU_SOLD,0,"Sold");
+                menu.add(0,MENU_DISABLE,0,"Disable");
+            } else if (article.state.equals(Article.State.DISABLED)){
+                menu.add(0,MENU_ACTIVATE,0, "Activate");
+            } else if (article.state.equals(Article.State.SOLD)){
+                menu.add(0,MENU_ACTIVATE,0, "Republish");
+            }
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case MENU_SOLD:
+                article.state = Article.State.SOLD;
+                articlesDBRef.setValue(article);
+                stateTextView.setText(Article.State.SOLD.toString());
+                menu.clear();
+                menu.add(0,MENU_ACTIVATE,0, "Republish");
+                break;
+            case MENU_DISABLE:
+                article.state = Article.State.DISABLED;
+                articlesDBRef.setValue(article);
+                stateTextView.setText(Article.State.DISABLED.toString());
+                menu.clear();
+                menu.add(0,MENU_ACTIVATE,0, "Activate");
+                break;
+            case MENU_ACTIVATE:
+                article.state = Article.State.ACTIVE;
+                articlesDBRef.setValue(article);
+                stateTextView.setText(Article.State.ACTIVE.toString());
+                menu.clear();
+                menu.add(0,MENU_SOLD,0,"Sold");
+                menu.add(0,MENU_DISABLE,0,"Disable");
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     public void getInfo(View v){
@@ -126,7 +186,7 @@ public class ArticleDetailActivity extends ChildActivity {
                 progressDialog.dismiss();
 
                 User user = new User("", String.valueOf(dataSnapshot.child("email").getValue(String.class)),
-                        String.valueOf(dataSnapshot.child("secondayEmail").getValue(String.class)),
+                        String.valueOf(dataSnapshot.child("secondaryEmail").getValue(String.class)),
                         String.valueOf(dataSnapshot.child("phone").getValue(String.class)));
                 UIUtils.showContactInfoDialog(ArticleDetailActivity.this, user, article.title);
             }

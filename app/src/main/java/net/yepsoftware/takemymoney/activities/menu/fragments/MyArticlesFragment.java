@@ -61,6 +61,7 @@ public class MyArticlesFragment extends Fragment {
     private DatabaseReference responseDBRef;
     private ProgressDialog progressDialog;
     private LinearLayout authLayout;
+    private ArrayList<String> articleKeys;
 
     private TextView label;
     private Button button;
@@ -94,6 +95,8 @@ public class MyArticlesFragment extends Fragment {
         authLayout = (LinearLayout) view.findViewById(R.id.authLayout);
 
         mAuth = FirebaseAuth.getInstance();
+
+        articleKeys = new ArrayList<>();
 
         return view;
     }
@@ -185,7 +188,9 @@ public class MyArticlesFragment extends Fragment {
                     if (hitsArrayList != null && hitsArrayList.size() > 0) {
                         for (Map<String, Object> hitMap : hitsArrayList) {
                             Map<String, Object> detailsMap = (Map<String, Object>) hitMap.get("_source");
-                            articles.add(new Article(detailsMap.get("uid").toString(), detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price"))), (ArrayList<String>) detailsMap.get("images"), Article.State.ACTIVE));
+                            String articleKey = hitMap.get("_id").toString();
+                            articleKeys.add(articleKey);
+                            articles.add(new Article(detailsMap.get("uid").toString(), detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price"))), (ArrayList<String>) detailsMap.get("images"), Article.stringToState(detailsMap.get("state").toString())));
                         }
                     } else {
                         articles.add(new Article("", "You don't have any articles posted...", "", 0.0,  null, Article.State.ACTIVE));
@@ -210,11 +215,13 @@ public class MyArticlesFragment extends Fragment {
                 if ((articles.get(position)).uid != "") {
                     Intent intent = new Intent(getActivity(), ArticleDetailActivity.class);
                     Article article = articles.get(position);
+                    intent.putExtra("articleKey", articleKeys.get(position));
                     intent.putExtra("uid", article.uid);
                     intent.putExtra("title", article.title);
                     intent.putExtra("description", article.description);
                     intent.putExtra("price", article.price);
                     intent.putExtra("images", article.images);
+                    intent.putExtra("state", article.state.toString());
                     intent.putExtra("FROM_MY_ARTICLES", true);
                     startActivity(intent);
                 }

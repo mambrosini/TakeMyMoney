@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">TakeMyMoney</string>
     <string name="action_sign_in">Sign in</string>
-    <string name="unlink_device">Unlink Device</string>
+    <string name="unlink_device">Change account</string>
     <string name="link_device">Link With Test Account</string>
     <string name="my_articles">My Articles</string>
     <string name="title_activity_main_drawer">MainDrawerActivity</string>

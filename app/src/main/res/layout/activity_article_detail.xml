@@ -18,6 +18,17 @@
             android:elevation="10dp">
 
             <TextView
+                android:id="@+id/state"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:fontFamily="sans-serif-thin"
+                android:gravity="center"
+                android:textColor="@color/articleActive"
+                tools:text="ACTIVE"
+                android:layout_marginBottom="10dp"/>
+
+            <TextView
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
