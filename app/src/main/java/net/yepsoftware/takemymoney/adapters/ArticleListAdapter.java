@@ -63,6 +63,10 @@ public class ArticleListAdapter extends ArrayAdapter<Article> {
             state.setVisibility(View.VISIBLE);
         }
 
+        if (article.uid.equals("")){
+            state.setVisibility(View.GONE);
+        }
+
         return convertView;
 
     }

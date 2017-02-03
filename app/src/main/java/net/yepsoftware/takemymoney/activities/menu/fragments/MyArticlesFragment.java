@@ -168,6 +168,7 @@ public class MyArticlesFragment extends Fragment {
         button2.setVisibility(View.GONE);
         listView.setVisibility(View.VISIBLE);
         articles = new ArrayList<>();
+        articleKeys.clear();
         articleListAdapter = new ArticleListAdapter(getActivity(), articles, true);
         listView.setAdapter(articleListAdapter);
 

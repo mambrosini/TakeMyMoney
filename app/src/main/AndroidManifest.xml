@@ -41,6 +41,8 @@
             android:parentActivityName=".activities.MainDrawerActivity" />
         <activity android:name=".activities.ContactInfoActivity"
             android:parentActivityName=".activities.MainDrawerActivity" />
+
+        <service android:name=".services.ImageDownloadService"/>
     </application>
 
 </manifest>
