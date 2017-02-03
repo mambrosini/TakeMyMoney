@@ -56,18 +56,87 @@
                 android:fontFamily="sans-serif-light"
                 tools:text="Description"/>
 
-            <GridView
+            <LinearLayout
+                android:id="@+id/imageLayout"
                 android:layout_marginTop="20dp"
-                android:id="@+id/imageGridView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:columnWidth="90dp"
-                android:numColumns="auto_fit"
-                android:verticalSpacing="0dp"
-                android:horizontalSpacing="0dp"
-                android:gravity="center"
-                android:background="#87000000"
-                android:padding="10dp" />
+                android:orientation="horizontal"
+                android:visibility="visible">
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_weight="1">
+                    <ImageView
+                        android:id="@+id/image1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"/>
+                    <RelativeLayout
+                        android:id="@+id/overlay1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:visibility="gone">
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="#b7ffffff"/>
+                        <ProgressBar
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_centerInParent="true"/>
+                    </RelativeLayout>
+                </RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_weight="1">
+                    <ImageView
+                        android:id="@+id/image2"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"/>
+                    <RelativeLayout
+                        android:id="@+id/overlay2"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:visibility="gone">
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="#b7ffffff"/>
+                        <ProgressBar
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_centerInParent="true"/>
+                    </RelativeLayout>
+                </RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_weight="1">
+                    <ImageView
+                        android:id="@+id/image3"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"/>
+                    <RelativeLayout
+                        android:id="@+id/overlay3"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:visibility="gone">
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="#b7ffffff"
+                            android:visibility="gone"/>
+                        <ProgressBar
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_centerInParent="true"/>
+                    </RelativeLayout>
+                </RelativeLayout>
+            </LinearLayout>
 
             <Space
                 android:layout_width="match_parent"

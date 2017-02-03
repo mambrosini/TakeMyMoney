@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -28,6 +29,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import net.yepsoftware.takemymoney.R;
+import net.yepsoftware.takemymoney.activities.ArticleDetailActivity;
 import net.yepsoftware.takemymoney.activities.AuthenticationActivity;
 import net.yepsoftware.takemymoney.activities.NewArticleActivity;
 import net.yepsoftware.takemymoney.activities.RegistrationActivity;
@@ -183,7 +185,7 @@ public class MyArticlesFragment extends Fragment {
                     if (hitsArrayList != null && hitsArrayList.size() > 0) {
                         for (Map<String, Object> hitMap : hitsArrayList) {
                             Map<String, Object> detailsMap = (Map<String, Object>) hitMap.get("_source");
-                            articles.add(new Article(detailsMap.get("uid").toString(), detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price"))), null, Article.State.ACTIVE));
+                            articles.add(new Article(detailsMap.get("uid").toString(), detailsMap.get("title").toString(), detailsMap.get("description").toString(), Double.valueOf(String.valueOf(detailsMap.get("price"))), (ArrayList<String>) detailsMap.get("images"), Article.State.ACTIVE));
                         }
                     } else {
                         articles.add(new Article("", "You don't have any articles posted...", "", 0.0,  null, Article.State.ACTIVE));
@@ -200,6 +202,23 @@ public class MyArticlesFragment extends Fragment {
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
             @Override
             public void onCancelled(DatabaseError databaseError) {}
+        });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if ((articles.get(position)).uid != "") {
+                    Intent intent = new Intent(getActivity(), ArticleDetailActivity.class);
+                    Article article = articles.get(position);
+                    intent.putExtra("uid", article.uid);
+                    intent.putExtra("title", article.title);
+                    intent.putExtra("description", article.description);
+                    intent.putExtra("price", article.price);
+                    intent.putExtra("images", article.images);
+                    intent.putExtra("FROM_MY_ARTICLES", true);
+                    startActivity(intent);
+                }
+            }
         });
     }
 

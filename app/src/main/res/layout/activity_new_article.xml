@@ -56,14 +56,16 @@
             android:hint="Description"
             android:id="@+id/description"/>
 
-            <Button
+            <ImageButton
+                android:src="@drawable/ic_insert_photo"
                 android:text="Add Images"
                 android:id="@+id/addImagesButton"
-                style="@style/ButtonStyle"
-                android:layout_width="match_parent"
+                android:background="@drawable/round_button"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:onClick="addImage"/>
+                android:onClick="addImage"
+                android:padding="10dp"/>
 
             <LinearLayout
                 android:id="@+id/imageLayout"

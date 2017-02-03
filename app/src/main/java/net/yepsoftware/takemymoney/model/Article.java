@@ -36,16 +36,6 @@ public class Article {
         this.state = state;
         if (images == null){
             images = new ArrayList<>();
-            images.add("https://firebasestorage.googleapis.com/v0/b/takemymoney-c3e5b.appspot.com/o/doge.jpeg?alt=media&token=c7f9fc68-f279-4a16-90c3-6f8e11051c41");
-            images.add("https://firebasestorage.googleapis.com/v0/b/takemymoney-c3e5b.appspot.com/o/Cara-meme-yao-ming-11.jpg?alt=media&token=fd1470fa-f9ab-483e-9e93-8bc12732007c");
-            images.add("https://firebasestorage.googleapis.com/v0/b/takemymoney-c3e5b.appspot.com/o/doge.jpeg?alt=media&token=c7f9fc68-f279-4a16-90c3-6f8e11051c41");
-            images.add("https://firebasestorage.googleapis.com/v0/b/takemymoney-c3e5b.appspot.com/o/Cara-meme-yao-ming-11.jpg?alt=media&token=fd1470fa-f9ab-483e-9e93-8bc12732007c");
-            images.add("https://firebasestorage.googleapis.com/v0/b/takemymoney-c3e5b.appspot.com/o/doge.jpeg?alt=media&token=c7f9fc68-f279-4a16-90c3-6f8e11051c41");
-            images.add("https://firebasestorage.googleapis.com/v0/b/takemymoney-c3e5b.appspot.com/o/Cara-meme-yao-ming-11.jpg?alt=media&token=fd1470fa-f9ab-483e-9e93-8bc12732007c");
-            images.add("https://firebasestorage.googleapis.com/v0/b/takemymoney-c3e5b.appspot.com/o/doge.jpeg?alt=media&token=c7f9fc68-f279-4a16-90c3-6f8e11051c41");
-            images.add("https://firebasestorage.googleapis.com/v0/b/takemymoney-c3e5b.appspot.com/o/Cara-meme-yao-ming-11.jpg?alt=media&token=fd1470fa-f9ab-483e-9e93-8bc12732007c");
-            images.add("https://firebasestorage.googleapis.com/v0/b/takemymoney-c3e5b.appspot.com/o/doge.jpeg?alt=media&token=c7f9fc68-f279-4a16-90c3-6f8e11051c41");
-            images.add("https://firebasestorage.googleapis.com/v0/b/takemymoney-c3e5b.appspot.com/o/Cara-meme-yao-ming-11.jpg?alt=media&token=fd1470fa-f9ab-483e-9e93-8bc12732007c");
         }
         this.images = images;
     }

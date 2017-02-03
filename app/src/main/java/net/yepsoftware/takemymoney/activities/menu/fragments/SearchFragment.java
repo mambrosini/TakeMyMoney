@@ -192,7 +192,7 @@ public class SearchFragment extends Fragment {
         searchListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (((Article)searchedArticles.get(position)).uid != "") {
+                if ((searchedArticles.get(position)).uid != "") {
                     Intent intent = new Intent(getActivity(), ArticleDetailActivity.class);
                     Article article = searchedArticles.get(position);
                     intent.putExtra("uid", article.uid);
@@ -200,6 +200,7 @@ public class SearchFragment extends Fragment {
                     intent.putExtra("description", article.description);
                     intent.putExtra("price", article.price);
                     intent.putExtra("images", article.images);
+                    intent.putExtra("FROM_MY_ARTICLES", false);
                     startActivity(intent);
                 }
             }

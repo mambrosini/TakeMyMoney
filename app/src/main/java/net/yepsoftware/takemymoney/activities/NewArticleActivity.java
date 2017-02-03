@@ -41,15 +41,17 @@ import net.yepsoftware.takemymoney.model.Article;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 public class NewArticleActivity extends ChildActivity {
 
     private EditText titleEditText;
     private EditText descriptionEditText;
     private EditText priceEditText;
-    private Button button;
+    private Button submitButton;
+    private ArrayList<String> imagesUrls;
+    private ArrayList<String> imagesNames;
 
     private LinearLayout imageLayout;
     private ImageView image1;
@@ -77,7 +79,7 @@ public class NewArticleActivity extends ChildActivity {
         titleEditText = (EditText) findViewById(R.id.title);
         descriptionEditText = (EditText) findViewById(R.id.description);
         priceEditText = (EditText) findViewById(R.id.price);
-        button = (Button) findViewById(R.id.button);
+        submitButton = (Button) findViewById(R.id.button);
 
         imageLayout = (LinearLayout) findViewById(R.id.imageLayout);
         image1 = (ImageView) findViewById(R.id.image1);
@@ -90,11 +92,14 @@ public class NewArticleActivity extends ChildActivity {
         loadingText2 = (TextView) findViewById(R.id.loadingText2);
         loadingText3 = (TextView) findViewById(R.id.loadingText3);
 
+        imagesUrls = new ArrayList<>();
+        imagesNames = new ArrayList<>();
+
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageReference = storage.getReferenceFromUrl("gs://takemymoney-c3e5b.appspot.com");
         imagesReference = storageReference.child("articles");
 
-        button.setOnClickListener(new View.OnClickListener() {
+        submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (titleEditText.getText().toString().isEmpty()
@@ -134,31 +139,48 @@ public class NewArticleActivity extends ChildActivity {
     private void removeImage(){
         if (removeImageView != null){
             if (removeImageView == image1){
+                imagesReference.child(imagesNames.get(0)).delete();
+                imagesNames.remove(0);
+                imagesUrls.remove(0);
                 if(image2.getDrawable() != null){
                     image1.setImageDrawable(image2.getDrawable());
                     if (image3.getDrawable() != null){
                         image2.setImageDrawable(image3.getDrawable());
+                        image3.setImageDrawable(null);
+                        unregisterForContextMenu(image3);
                     } else {
                         image2.setImageDrawable(null);
+                        unregisterForContextMenu(image2);
                     }
                 } else {
                     image1.setImageDrawable(null);
+                    unregisterForContextMenu(image1);
                     imageLayout.setVisibility(View.GONE);
                 }
             } else if (removeImageView == image2){
+                imagesReference.child(imagesNames.get(1)).delete();
+                imagesNames.remove(1);
+                imagesUrls.remove(1);
                 if (image3.getDrawable() != null){
                     image2.setImageDrawable(image3.getDrawable());
+                    image3.setImageDrawable(null);
+                    unregisterForContextMenu(image3);
                 } else {
                     image2.setImageDrawable(null);
+                    unregisterForContextMenu(image2);
                 }
             } else if (removeImageView == image3){
+                imagesReference.child(imagesNames.get(2)).delete();
+                imagesNames.remove(2);
+                imagesUrls.remove(2);
                 image3.setImageDrawable(null);
+                unregisterForContextMenu(image3);
             }
         }
     }
 
     private void writeNewArticle(String title, String description, double price) {
-        Article article = new Article(PreferencesHelper.getUserId(getApplicationContext()), title, description, price,  null, Article.State.ACTIVE);
+        Article article = new Article(PreferencesHelper.getUserId(getApplicationContext()), title, description, price,  imagesUrls, Article.State.ACTIVE);
         String key = articlesDBRef.push().getKey();
         articlesDBRef.child(key).setValue(article);
     }
@@ -342,7 +364,7 @@ public class NewArticleActivity extends ChildActivity {
         uploadImage(image, imageNumber);
     }
 
-    private void uploadImage(final Bitmap image, int imageNumber){
+    private void uploadImage(final Bitmap image, final int imageNumber){
         final TextView textView;
         final View overlay;
         final ImageView imageView;
@@ -371,23 +393,32 @@ public class NewArticleActivity extends ChildActivity {
 
         overlay.setVisibility(View.VISIBLE);
 
+        submitButton.setEnabled(false);
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] data = baos.toByteArray();
         String key = articlesDBRef.push().getKey();
         UploadTask uploadTask = imagesReference.child(key + ".jpg").putBytes(data);
+        imagesNames.add(key+".jpg");
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle unsuccessful uploads
+                imagesNames.remove(imageNumber - 1);
+                overlay.setVisibility(View.GONE);
+                imageView.setImageDrawable(null);
+                Toast.makeText(NewArticleActivity.this, "Image upload failed. Please retry.", Toast.LENGTH_SHORT).show();
+                submitButton.setEnabled(true);
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                Uri downloadUrl = taskSnapshot.getDownloadUrl();
                 overlay.setVisibility(View.GONE);
                 registerForContextMenu(imageView);
+                imagesUrls.add(String.valueOf(taskSnapshot.getDownloadUrl()));
+                submitButton.setEnabled(true);
             }
         }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
             @Override
