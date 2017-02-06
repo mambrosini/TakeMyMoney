@@ -7,4 +7,6 @@
     <color name="articleActive">#157e21</color>
     <color name="articleDisabled">#990d0d</color>
     <color name="articleSold">#767676</color>
+
+    <color name="black_overlay">#66000000</color>
 </resources>

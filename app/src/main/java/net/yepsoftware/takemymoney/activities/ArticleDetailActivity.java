@@ -39,6 +39,7 @@ import net.yepsoftware.takemymoney.model.Article;
 import net.yepsoftware.takemymoney.model.User;
 import net.yepsoftware.takemymoney.services.ImageDownloadService;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -207,10 +208,16 @@ public class ArticleDetailActivity extends ChildActivity {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setAction(Intent.ACTION_VIEW);
-                Uri uri = getImageContentUri(new File(filePath));
-                intent.setDataAndType(uri, "image/*");
+//                Intent intent = new Intent();
+//                intent.setAction(Intent.ACTION_VIEW);
+//                Uri uri = getImageContentUri(new File(filePath));
+//                intent.setDataAndType(uri, "image/*");
+//                startActivity(intent);
+
+                Intent intent = new Intent(ArticleDetailActivity.this, ImageViewActivity.class);
+                ByteArrayOutputStream bs = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bs);
+                intent.putExtra("byteArray", bs.toByteArray());
                 startActivity(intent);
             }
         });

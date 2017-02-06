@@ -3,10 +3,10 @@
     package="net.yepsoftware.takemymoney">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.IMAGE_CAPTURE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.IMAGE_CAPTURE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -39,10 +39,18 @@
         <activity
             android:name=".activities.ArticleDetailActivity"
             android:parentActivityName=".activities.MainDrawerActivity" />
-        <activity android:name=".activities.ContactInfoActivity"
+        <activity
+            android:name=".activities.ContactInfoActivity"
             android:parentActivityName=".activities.MainDrawerActivity" />
 
-        <service android:name=".services.ImageDownloadService"/>
+        <service android:name=".services.ImageDownloadService" />
+
+        <activity
+            android:name=".activities.ImageViewActivity"
+            android:parentActivityName=".activities.ArticleDetailActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_image_view"
+            android:theme="@style/FullscreenTheme"></activity>
     </application>
 
 </manifest>

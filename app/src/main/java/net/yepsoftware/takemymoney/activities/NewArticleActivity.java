@@ -347,7 +347,7 @@ public class NewArticleActivity extends ChildActivity {
     }
 
     private void fillImageViews(Bitmap image){
-        Bitmap bitmap = ImageHelper.getResizedBitmapKeepingAspectRatio(image, 1024, 1024);
+        Bitmap bitmap = ImageHelper.getResizedBitmapKeepingAspectRatio(image, 1080, 1080);
         int imageNumber = 0;
         if (image1.getDrawable() == null){
             image1.setImageBitmap(bitmap);
@@ -361,7 +361,7 @@ public class NewArticleActivity extends ChildActivity {
         } else {
 
         }
-        uploadImage(image, imageNumber);
+        uploadImage(bitmap, imageNumber);
     }
 
     private void uploadImage(final Bitmap image, final int imageNumber){
@@ -396,7 +396,7 @@ public class NewArticleActivity extends ChildActivity {
         submitButton.setEnabled(false);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        image.compress(Bitmap.CompressFormat.JPEG, 80, baos);
         byte[] data = baos.toByteArray();
         String key = articlesDBRef.push().getKey();
         UploadTask uploadTask = imagesReference.child(key + ".jpg").putBytes(data);

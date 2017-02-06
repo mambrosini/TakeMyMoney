@@ -37,52 +37,54 @@ public class ImageDownloadService extends IntentService {
         String url = intent.getStringExtra("url");
         imageNumber = intent.getIntExtra("imageNumber", -1);
 
-        File downloadFile = getFileForPicture();
-        try {
-            downloadFile.createNewFile();
-            URL downloadURL = new URL(url);
-            HttpURLConnection conn = (HttpURLConnection) downloadURL
-                    .openConnection();
-            int responseCode = conn.getResponseCode();
-            if (responseCode != 200)
-                throw new Exception("Error in connection");
-            InputStream is = conn.getInputStream();
-            FileOutputStream os = new FileOutputStream(downloadFile);
-            byte buffer[] = new byte[1024];
-            int byteCount;
-            while ((byteCount = is.read(buffer)) != -1) {
-                os.write(buffer, 0, byteCount);
+        String imageName = url.substring(url.indexOf("articles%2F") + 11, url.indexOf(".jpg?alt") + 4);
+        File downloadFile = getFileForPicture(imageName);
+
+        if (!downloadFile.exists()) {
+            try {
+                downloadFile.createNewFile();
+                URL downloadURL = new URL(url);
+                HttpURLConnection conn = (HttpURLConnection) downloadURL
+                        .openConnection();
+                int responseCode = conn.getResponseCode();
+                if (responseCode != 200)
+                    throw new Exception("Error in connection");
+                InputStream is = conn.getInputStream();
+                FileOutputStream os = new FileOutputStream(downloadFile);
+                byte buffer[] = new byte[1024];
+                int byteCount;
+                while ((byteCount = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, byteCount);
+                }
+                os.close();
+                is.close();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                LocalBroadcastManager broadcaster = LocalBroadcastManager.getInstance(getApplicationContext());
+                Intent broadcastIntent = new Intent(IMAGE_DOWLOADED_BROADCAST);
+                broadcastIntent.putExtra(MESSAGE, DOWNLOAD_ERROR);
+                broadcastIntent.putExtra(IMAGE_NUMBER, imageNumber);
+                broadcaster.sendBroadcast(broadcastIntent);
+
+                return;
             }
-            os.close();
-            is.close();
-
-            String filePath = downloadFile.getPath();
-
-            ImageHelper.scanMedia(getApplicationContext(), filePath);
-
-            LocalBroadcastManager broadcaster = LocalBroadcastManager.getInstance(getApplicationContext());
-            Intent broadcastIntent = new Intent(IMAGE_DOWLOADED_BROADCAST);
-            broadcastIntent.putExtra(MESSAGE, DOWNLOAD_SUCCESS);
-            broadcastIntent.putExtra(FILEPATH, filePath);
-            broadcastIntent.putExtra(IMAGE_NUMBER, imageNumber);
-            broadcaster.sendBroadcast(broadcastIntent);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-
-            LocalBroadcastManager broadcaster = LocalBroadcastManager.getInstance(getApplicationContext());
-            Intent broadcastIntent = new Intent(IMAGE_DOWLOADED_BROADCAST);
-            broadcastIntent.putExtra(MESSAGE, DOWNLOAD_ERROR);
-            broadcastIntent.putExtra(IMAGE_NUMBER, imageNumber);
-            broadcaster.sendBroadcast(broadcastIntent);
         }
+
+        String filePath = downloadFile.getPath();
+
+        LocalBroadcastManager broadcaster = LocalBroadcastManager.getInstance(getApplicationContext());
+        Intent broadcastIntent = new Intent(IMAGE_DOWLOADED_BROADCAST);
+        broadcastIntent.putExtra(MESSAGE, DOWNLOAD_SUCCESS);
+        broadcastIntent.putExtra(FILEPATH, filePath);
+        broadcastIntent.putExtra(IMAGE_NUMBER, imageNumber);
+        broadcaster.sendBroadcast(broadcastIntent);
     }
 
-    public File getFileForPicture (){
+    public File getFileForPicture (String filename){
         String root = getCacheDir().toString();
-
-        String fileNameFull = "tmm_IMG_" + new Date().getTime() + ".jpg";
-        File file = new File(root, fileNameFull);
+        File file = new File(root, filename);
 
         return file;
     }
